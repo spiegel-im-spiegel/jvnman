@@ -10,37 +10,53 @@ import (
 	"github.com/spiegel-im-spiegel/jvnman/database"
 )
 
-//newVersionCmd returns cobra.Command instance for show sub-command
-func newInitCmd(ui *rwi.RWI) *cobra.Command {
-	initCmd := &cobra.Command{
-		Use:   "init",
-		Short: "Initialize JVN database",
-		Long:  "Initialize JVN database",
+//newUpdateCmd returns cobra.Command instance for show sub-command
+func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
+	updateCmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update JVN database",
+		Long:  "Update JVN database",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbf := viper.GetString("dbfile")
 			if len(dbf) == 0 {
 				return errors.Wrap(os.ErrInvalid, "--dbfile")
 			}
-			if v, err := cmd.Flags().GetBool("verbose"); err != nil {
+			v, err := cmd.Flags().GetBool("verbose")
+			if err != nil {
 				return errors.Wrap(os.ErrInvalid, "--verbose")
-			} else if v {
-				ui.Outputln("Initialize", dbf)
 			}
-			os.Remove(dbf)
+			m, err := cmd.Flags().GetBool("month")
+			if err != nil {
+				return errors.Wrap(os.ErrInvalid, "--month")
+			}
 
+			if v {
+				ui.Outputln("Update", dbf)
+			}
 			db, err := database.New(dbf)
 			if err != nil {
 				return err
 			}
+			ids, err := db.Update(m)
+			if err != nil {
+				return err
+			}
+			if err := db.UpdateDetail(ids); err != nil {
+				return err
+			}
+			if v {
+				for _, id := range ids {
+					ui.Outputln(id)
+				}
+			}
 			defer db.Close()
 
-			return db.Initialize()
+			return nil
 		},
 	}
-	//initCmd.PersistentFlags().StringP("dbfile", "f", dbpath, "database file name")
-	//viper.BindPFlag("dbfile", initCmd.PersistentFlags().Lookup("dbfile"))
+	updateCmd.Flags().BoolP("month", "m", false, "get the data for the past month")
 
-	return initCmd
+	return updateCmd
 }
 
 /* Copyright 2018 Spiegel

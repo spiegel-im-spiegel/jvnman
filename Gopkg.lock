@@ -106,6 +106,20 @@
   version = "v1.0.2"
 
 [[projects]]
+  name = "github.com/spiegel-im-spiegel/go-myjvn"
+  packages = [
+    ".",
+    "request",
+    "rss",
+    "rss/option",
+    "status",
+    "values",
+    "vuldef"
+  ]
+  revision = "5efca286ed51fb9083cd8c8a627e2a6f0e0af3bf"
+  version = "v0.2.1"
+
+[[projects]]
   name = "github.com/spiegel-im-spiegel/gocli"
   packages = [
     "exitcode",
@@ -142,6 +156,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5d2b72c2549bc51513e10f06f0646da46f1c320740500a2689a3a088ca07eaf5"
+  inputs-digest = "6b9ba20caba9d0b7079f35cd05a9e7c4c841a8c112a2e0830166e8e01294e1e7"
   solver-name = "gps-cdcl"
   solver-version = 1

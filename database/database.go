@@ -1,10 +1,15 @@
 package database
 
-import "database/sql"
+import (
+	"database/sql"
+
+	myjvn "github.com/spiegel-im-spiegel/go-myjvn"
+)
 
 //DB is type of database
 type DB struct {
-	db *sql.DB
+	db  *sql.DB
+	api *myjvn.APIs
 }
 
 //New returns DB instance
@@ -13,7 +18,7 @@ func New(dbf string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DB{db: db}, nil
+	return &DB{db: db, api: myjvn.New()}, nil
 }
 
 //Close closes sql.DB

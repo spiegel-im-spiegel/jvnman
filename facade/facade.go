@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dbpath = "jvndb.sqlite3"
+	dbpath = "./jvndb.sqlite3"
 )
 
 var (
@@ -42,8 +42,12 @@ func newRootCmd(ui *rwi.RWI, args []string) *cobra.Command {
 	rootCmd.SetOutput(ui.ErrorWriter())
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jvnman.yaml)")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose mode")
+	rootCmd.PersistentFlags().StringP("dbfile", "f", dbpath, "database file name")
+	viper.BindPFlag("dbfile", rootCmd.PersistentFlags().Lookup("dbfile"))
 	rootCmd.AddCommand(newVersionCmd(ui))
 	rootCmd.AddCommand(newInitCmd(ui))
+	rootCmd.AddCommand(newUpdateCmd(ui))
 
 	return rootCmd
 }
