@@ -48,7 +48,8 @@ func newInitCmd(ui *rwi.RWI) *cobra.Command {
 			}
 			defer db.Close()
 
-			return db.Initialize()
+			err = db.Initialize()
+			return err
 		},
 	}
 	//initCmd.PersistentFlags().StringP("dbfile", "f", dbpath, "database file name")
