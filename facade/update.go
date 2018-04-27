@@ -37,6 +37,8 @@ func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			defer db.Close()
+
 			ids, err := db.Update(m)
 			if err != nil {
 				return err
@@ -49,8 +51,6 @@ func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 					ui.Outputln(id)
 				}
 			}
-			defer db.Close()
-
 			return nil
 		},
 	}

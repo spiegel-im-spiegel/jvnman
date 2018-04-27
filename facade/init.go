@@ -2,6 +2,7 @@ package facade
 
 import (
 	"os"
+	"syscall"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -26,7 +27,20 @@ func newInitCmd(ui *rwi.RWI) *cobra.Command {
 			} else if v {
 				ui.Outputln("Initialize", dbf)
 			}
-			os.Remove(dbf)
+			if err := os.Remove(dbf); err != nil {
+				switch e := err.(type) {
+				case *os.PathError:
+					if errno, ok := e.Err.(syscall.Errno); ok {
+						if errno != syscall.ENOENT {
+							return err
+						}
+					} else {
+						return err
+					}
+				default:
+					return err
+				}
+			}
 
 			db, err := database.New(dbf)
 			if err != nil {
