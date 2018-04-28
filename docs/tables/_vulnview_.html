@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+		<title>テーブル定義書&#32;JVN&#32;Data&#32;management</title>
+		<link rel="stylesheet" href="../a5m2.css">
+	</head>
+	<body>
+	<table>
+		<caption>テーブル情報</caption>
+		<tr>
+			<th>システム名</th>
+			<td>JVN&#32;Data&#32;management&nbsp;</td>
+			<th>作成者</th>
+			<td>spiegel&nbsp;</td>
+		</tr>
+		<tr>
+			<th>サブシステム名</th>
+			<td>&nbsp;</td>
+			<th>作成日</th>
+			<td>2018/04/28&nbsp;</td>
+		</tr>
+		<tr>
+			<th>スキーマ名</th>
+			<td>&nbsp;</td>
+			<th>更新日</th>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<th>論理テーブル名</th>
+			<td>脆弱性対策情報一覧</td>
+			<th>RDBMS&nbsp;</th>
+			<td><a href="https://www.sqlite.org/">SQLite 3</a></td>
+		</tr>
+		<tr>
+			<th>物理テーブル名</th>
+			<td>vulnview&nbsp;</td>
+			<th>&nbsp;</th>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="4"><b>備考</b><br></td>
+		</tr>
+	</table>
+
+<br>
+<br>
+	<table>
+		<caption>カラム情報</caption>
+		<tr>
+			<th>No</th>
+			<th>論理名</th>
+			<th>物理名</th>
+			<th>データ型</th>
+			<th>Not Null</th>
+			<th>デフォルト</th>
+			<th>備考</th>
+		</tr>
+		<tr>
+			<td style="text-align:right;">1</td>
+			<td>脆弱性情報ID</td>
+			<td>id</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">2</td>
+			<td>セキュリティ情報のタイトル</td>
+			<td>title</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">3</td>
+			<td>セキュリティ情報の概要</td>
+			<td>description</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">4</td>
+			<td>セキュリティ情報のURI</td>
+			<td>uri</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">5</td>
+			<td>想定される影響</td>
+			<td>impact</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">6</td>
+			<td>対策</td>
+			<td>solution</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">7</td>
+			<td>CVSS 評価値</td>
+			<td>cvss_score</td>
+			<td>NUMERIC</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td>CVSSv3</td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">8</td>
+			<td>CVSS 深刻度</td>
+			<td>cvss_severity</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td>CVSSv3</td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">9</td>
+			<td>発見日</td>
+			<td>date_public</td>
+			<td>INTEGER</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td>UNIX Time</td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">10</td>
+			<td>公開日</td>
+			<td>date_publish</td>
+			<td>INTEGER</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td>UNIX Time</td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">11</td>
+			<td>最終更新日</td>
+			<td>date_update</td>
+			<td>INTEGER</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td>UNIX Time</td>
+		</tr>
+	</table>
+
+<br>
+<br>
+	<table>
+		<colgroup>
+			<col width="590">
+		</colgroup>
+		<caption>ソース</caption>
+		<tr>
+			<th>ソース</th>
+		</tr>
+		<tr>
+			<td>
+				<pre>
+CREATE&#32;VIEW&#32;vulnview&#32;as&#32;<br>select<br>&#32;&#32;list.id&#32;as&#32;id<br>&#32;&#32;,&#32;list.title&#32;as&#32;title<br>&#32;&#32;,&#32;list.description&#32;as&#32;description<br>&#32;&#32;,&#32;list.uri&#32;as&#32;uri<br>&#32;&#32;,&#32;list.impact&#32;as&#32;impact<br>&#32;&#32;,&#32;list.solution&#32;as&#32;solution<br>&#32;&#32;,&#32;cvss.base_score&#32;as&#32;cvss_score<br>&#32;&#32;,&#32;cvss.severity&#32;as&#32;cvss_severity<br>&#32;&#32;,&#32;list.date_public&#32;as&#32;date_public<br>&#32;&#32;,&#32;list.date_publish&#32;as&#32;date_publish<br>&#32;&#32;,&#32;list.date_update&#32;as&#32;date_update&#32;<br>from<br>&#32;&#32;vulnlist&#32;list&#32;<br>&#32;&#32;left&#32;outer&#32;join&#32;cvss&#32;<br>&#32;&#32;&#32;&#32;on&#32;list.id&#32;=&#32;cvss.id&#32;<br>&#32;&#32;&#32;&#32;and&#32;cvss.version&#32;=&#32;'3.0'<br>
+				</pre>
+			</td>
+		</tr>
+	</table>
+
+	<p>Powerd by <a href="https://a5m2.mmatsubara.com/">A5:SQL Mk-2</a></p>
+	</body>
+</html>

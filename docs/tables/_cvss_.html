@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+		<title>テーブル定義書&#32;JVN&#32;Data&#32;management</title>
+		<link rel="stylesheet" href="../a5m2.css">
+	</head>
+	<body>
+	<table>
+		<caption>テーブル情報</caption>
+		<tr>
+			<th>システム名</th>
+			<td>JVN&#32;Data&#32;management&nbsp;</td>
+			<th>作成者</th>
+			<td>spiegel&nbsp;</td>
+		</tr>
+		<tr>
+			<th>サブシステム名</th>
+			<td>&nbsp;</td>
+			<th>作成日</th>
+			<td>2018/04/28&nbsp;</td>
+		</tr>
+		<tr>
+			<th>スキーマ名</th>
+			<td>&nbsp;</td>
+			<th>更新日</th>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<th>論理テーブル名</th>
+			<td>脆弱性の影響度</td>
+			<th>RDBMS&nbsp;</th>
+			<td><a href="https://www.sqlite.org/">SQLite 3</a></td>
+		</tr>
+		<tr>
+			<th>物理テーブル名</th>
+			<td>cvss&nbsp;</td>
+			<th>&nbsp;</th>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="4"><b>備考</b><br></td>
+		</tr>
+	</table>
+
+<br>
+<br>
+	<table>
+		<caption>カラム情報</caption>
+		<tr>
+			<th>No</th>
+			<th>論理名</th>
+			<th>物理名</th>
+			<th>データ型</th>
+			<th>Not Null</th>
+			<th>デフォルト</th>
+			<th>備考</th>
+		</tr>
+		<tr>
+			<td style="text-align:right;">1</td>
+			<td>脆弱性情報ID</td>
+			<td>id</td>
+			<td>TEXT</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">2</td>
+			<td>CVSS バージョン</td>
+			<td>version</td>
+			<td>TEXT</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">3</td>
+			<td>CVSS基本評価の短縮表記</td>
+			<td>base_vector</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">4</td>
+			<td>CVSS基本評価値</td>
+			<td>base_score</td>
+			<td>NUMERIC</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td style="text-align:right;">5</td>
+			<td>深刻度</td>
+			<td>severity</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+
+<br>
+<br>
+	<table>
+		<caption>インデックス情報</caption>
+		<tr>
+			<th>No</th>
+			<th>インデックス名</th>
+			<th>カラムリスト</th>
+			<th>ユニーク</th>
+			<th>備考</th>
+		</tr>
+		<tr>
+			<td style="text-align:right;">1</td>
+			<td>sqlite_autoindex_cvss_1</td>
+			<td>id,version</td>
+			<td>Yes</td>
+			<td>&nbsp;</td>
+		</tr>
+	</table>
+
+<br>
+<br>
+	<table>
+		<caption>制約情報</caption>
+		<tr>
+			<th>No</th>
+			<th>制約名</th>
+			<th>種類</th>
+			<th>制約定義</th>
+		</tr>
+		<tr>
+			<td style="text-align:right;">1</td>
+			<td>pk_cvss</td>
+			<td>PRIMARY&#32;KEY</td>
+			<td>id,version</td>
+		</tr>
+	</table>
+
+	<p>Powerd by <a href="https://a5m2.mmatsubara.com/">A5:SQL Mk-2</a></p>
+	</body>
+</html>
