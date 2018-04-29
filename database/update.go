@@ -1,6 +1,7 @@
 package database
 
 import (
+	"html"
 	"time"
 
 	"github.com/spiegel-im-spiegel/go-myjvn/rss"
@@ -16,11 +17,7 @@ func (db *DB) Update(month bool) ([]string, error) {
 		return ids, nil
 	}
 
-	start, err := db.getLastUpdate()
-	if err != nil {
-		return ids, err
-	}
-	jvnrss, err := db.getJVNRSS(start, month)
+	jvnrss, err := db.getJVNRSS(db.getLastUpdate(), month)
 	if err != nil {
 		return ids, err
 	}
@@ -30,33 +27,32 @@ func (db *DB) Update(month bool) ([]string, error) {
 		return ids, err
 	}
 
-	//prepared statements
-	addStmt, err := tx.Prepare("insert into vulnlist (id, title, description, uri, creator, date_public, date_publish, date_update) values(?, ?, ?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		tx.Rollback()
-		return ids, err
-	}
-	defer addStmt.Close()
-	updStmt, err := tx.Prepare("update vulnlist set title = ?, description = ?, uri = ?, creator = ?, date_public = ?, date_publish = ?, date_update = ? where id = ?")
-	if err != nil {
-		tx.Rollback()
-		return ids, err
-	}
-	defer updStmt.Close()
-
 	//insert and update data
 	err = nil
 	for _, itm := range jvnrss.Items {
-		upd := db.getModifiedDate(itm.Identifier)
-		if upd.IsZero() {
+		obj, errGet := db.GetDB().Get(Vulnlist{}, itm.Identifier)
+		if errGet != nil {
+			err = errGet
+			break
+		}
+		if obj == nil {
 			ids = append(ids, itm.Identifier)
-			if _, err = addStmt.Exec(itm.Identifier, itm.Title, itm.Description, itm.Link, itm.Creator, itm.Date.Unix(), itm.Issued.Unix(), itm.Modified.Unix()); err != nil {
+			if err = tx.Insert(NewVulnlist(itm.Identifier, html.UnescapeString(itm.Title), html.UnescapeString(itm.Description), html.UnescapeString(itm.Link), html.UnescapeString(itm.Creator), "", "", itm.Date.Unix(), itm.Issued.Unix(), itm.Modified.Unix())); err != nil {
 				break
 			}
-		} else if itm.Modified.After(upd) {
-			ids = append(ids, itm.Identifier)
-			if _, err = updStmt.Exec(itm.Title, itm.Description, itm.Link, itm.Creator, itm.Date.Unix(), itm.Issued.Unix(), itm.Modified.Unix(), itm.Identifier); err != nil {
-				break
+		} else {
+			ds := obj.(*Vulnlist)
+			if itm.Modified.After(getTimeFromUnixtime(ds.DateUpdate)) {
+				ds.Title = html.UnescapeString(itm.Title)
+				ds.Description = html.UnescapeString(itm.Description)
+				ds.URI = html.UnescapeString(itm.Link)
+				ds.Creator = html.UnescapeString(itm.Creator)
+				ds.DatePublic = itm.Date.Unix()
+				ds.DatePublish = itm.Issued.Unix()
+				ds.DateUpdate = itm.Modified.Unix()
+				if _, err = tx.Update(ds); err != nil {
+					break
+				}
 			}
 		}
 	}
@@ -87,76 +83,33 @@ func (db *DB) UpdateDetail(ids []string) error {
 		return err
 	}
 
-	//prepared statements
-	updList, err := tx.Prepare("update vulnlist set impact = ?, solution = ?, date_public = ?, date_publish = ? where id = ?")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer updList.Close()
-	delAffected, err := tx.Prepare("delete from affected where id = ?")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer delAffected.Close()
-	addAffected, err := tx.Prepare("insert into affected (id, name, product_name, version_number) values(?, ?, ?, ?)")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer addAffected.Close()
-	delCVSS, err := tx.Prepare("delete from cvss where id = ?")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer delCVSS.Close()
-	addCVSS, err := tx.Prepare("insert into cvss (id, version, base_vector, base_score, severity) values(?, ?, ?, ?, ?)")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer addCVSS.Close()
-	delRelated, err := tx.Prepare("delete from related where id = ?")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer delRelated.Close()
-	addRelated, err := tx.Prepare("insert into related (id, type, name, vulinfo_id, title, url) values(?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer addRelated.Close()
-	delHistory, err := tx.Prepare("delete from history where id = ?")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer delHistory.Close()
-	addHistory, err := tx.Prepare("insert into history (id, history_no, description, date_time) values(?, ?, ?, ?)")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	defer addHistory.Close()
-
 	//update detail data
 	err = nil
 	for _, vuln := range vulnInfo.Vulinfo {
 		//update vulnlist
-		if _, err = updList.Exec(vuln.VulinfoData.Impact.Description, vuln.VulinfoData.Solution.Description, vuln.VulinfoData.DatePublic.Unix(), vuln.VulinfoData.DateFirstPublished.Unix(), vuln.VulinfoID); err != nil {
+		obj, errGet := db.GetDB().Get(Vulnlist{}, vuln.VulinfoID)
+		if errGet != nil {
+			err = errGet
 			break
 		}
+		if obj != nil {
+			ds := obj.(*Vulnlist)
+			ds.Impact = html.UnescapeString(vuln.VulinfoData.Impact.Description)
+			ds.Solution = html.UnescapeString(vuln.VulinfoData.Solution.Description)
+			ds.DatePublic = vuln.VulinfoData.DatePublic.Unix()
+			ds.DatePublish = vuln.VulinfoData.DateFirstPublished.Unix()
+			if _, err = tx.Update(ds); err != nil {
+				break
+			}
+		}
+
 		//Affected info.
-		if _, err = delAffected.Exec(vuln.VulinfoID); err != nil {
+		if _, err = tx.Exec("delete from affected where id = ?", vuln.VulinfoID); err != nil {
 			break
 		}
 		for _, affected := range vuln.VulinfoData.Affected {
 			for _, ver := range affected.VersionNumber {
-				if _, err = addAffected.Exec(vuln.VulinfoID, affected.Name, affected.ProductName, ver); err != nil {
+				if err = tx.Insert(NewAffected(vuln.VulinfoID, html.UnescapeString(affected.Name), html.UnescapeString(affected.ProductName), html.UnescapeString(ver))); err != nil {
 					break
 				}
 			}
@@ -169,11 +122,11 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//Impact info
-		if _, err = delCVSS.Exec(vuln.VulinfoID); err != nil {
+		if _, err = tx.Exec("delete from cvss where id = ?", vuln.VulinfoID); err != nil {
 			break
 		}
 		for _, cvss := range vuln.VulinfoData.Impact.CVSS {
-			if _, err = addCVSS.Exec(vuln.VulinfoID, cvss.Version, cvss.BaseVector, cvss.BaseScore, cvss.Severity); err != nil {
+			if err = tx.Insert(NewCVSS(vuln.VulinfoID, cvss.Version, cvss.BaseVector, cvss.Severity, getFloatFromString(cvss.BaseScore))); err != nil {
 				break
 			}
 		}
@@ -182,11 +135,11 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//Related info.
-		if _, err = delRelated.Exec(vuln.VulinfoID); err != nil {
+		if _, err = tx.Exec("delete from related where id = ?", vuln.VulinfoID); err != nil {
 			break
 		}
 		for _, related := range vuln.VulinfoData.Related {
-			if _, err = addRelated.Exec(vuln.VulinfoID, related.Type, related.Name, related.VulinfoID, related.Title, related.URL); err != nil {
+			if err = tx.Insert(NewRelated(vuln.VulinfoID, related.Type, html.UnescapeString(related.Name), html.UnescapeString(related.VulinfoID), html.UnescapeString(related.Title), html.UnescapeString(related.URL))); err != nil {
 				break
 			}
 		}
@@ -195,11 +148,11 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//History info.
-		if _, err = delHistory.Exec(vuln.VulinfoID); err != nil {
+		if _, err = tx.Exec("delete from history where id = ?", vuln.VulinfoID); err != nil {
 			break
 		}
 		for _, history := range vuln.VulinfoData.History {
-			if _, err = addHistory.Exec(vuln.VulinfoID, history.HistoryNo, history.Description, history.DateTime.Unix()); err != nil {
+			if err = tx.Insert(NewHistory(vuln.VulinfoID, history.HistoryNo, html.UnescapeString(history.Description), history.DateTime.Unix())); err != nil {
 				break
 			}
 		}
@@ -215,33 +168,14 @@ func (db *DB) UpdateDetail(ids []string) error {
 	return tx.Commit()
 }
 
-func (db *DB) getLastUpdate() (time.Time, error) {
-	t := time.Time{}
-	rows, err := db.GetDB().Query("select max(date_update) as last from vulnlist")
-	if err != nil {
-		return t, err
+func (db *DB) getLastUpdate() time.Time {
+	var ds struct {
+		utime int64
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var utime int64
-		rows.Scan(&utime)
-		if utime > 0 {
-			t = time.Unix(utime, 0)
-		}
-	}
-	return t, rows.Err()
-}
-
-func (db *DB) getModifiedDate(id string) time.Time {
-	var utime int64
-	if err := db.GetDB().QueryRow("select date_update from vulnlist where id = ?", id).Scan(&utime); err != nil {
+	if err := db.GetDB().SelectOne(&ds, "select max(date_update) as last from vulnlist"); err != nil {
 		return time.Time{}
 	}
-	if utime > 0 {
-		return time.Unix(utime, 0)
-	}
-	return time.Time{}
+	return getTimeFromUnixtime(ds.utime)
 }
 
 func (db *DB) getJVNRSS(start time.Time, month bool) (*rss.JVNRSS, error) {
@@ -270,7 +204,7 @@ func (db *DB) getJVNRSS(start time.Time, month bool) (*rss.JVNRSS, error) {
 			)
 		}
 		if startItem == 1 {
-			xml, err := db.api.VulnOverviewListXML(opt)
+			xml, err := db.GetAPI().VulnOverviewListXML(opt)
 			if err != nil {
 				return jvnrss, err
 			}
@@ -289,7 +223,7 @@ func (db *DB) getJVNRSS(start time.Time, month bool) (*rss.JVNRSS, error) {
 			startItem += len(r.Items)
 			jvnrss = r
 		} else {
-			r, err := db.api.VulnOverviewList(opt)
+			r, err := db.GetAPI().VulnOverviewList(opt)
 			if err != nil {
 				return jvnrss, err
 			}
@@ -312,7 +246,7 @@ func (db *DB) getVULDEF(idlist []string) (*vuldef.VULDEF, error) {
 		} else {
 			ids = idlist[i:]
 		}
-		vuln, err := db.api.VulnDetailInfo(ids)
+		vuln, err := db.GetAPI().VulnDetailInfo(ids)
 		if err != nil {
 			return vulnInfo, err
 		}

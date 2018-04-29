@@ -1,24 +1,39 @@
-package main
+package report
 
-import (
-	"os"
+import "strings"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/spiegel-im-spiegel/gocli/rwi"
-	"github.com/spiegel-im-spiegel/jvnman/facade"
+//Format is type of output-format
+type Format int
+
+//Output format
+const (
+	FormUnknown Format = iota
+	FormHTML
+	FormMarkdown
+	FormCSV
 )
 
-//go:generate go-assets-builder -p report -s="/report/assets" -o report/assets.go report/assets/
+var formatMap = map[string]Format{
+	"html":     FormHTML,
+	"markdown": FormMarkdown,
+	"csv":      FormCSV,
+}
 
-func main() {
-	facade.Execute(
-		rwi.New(
-			rwi.WithReader(os.Stdin),
-			rwi.WithWriter(os.Stdout),
-			rwi.WithErrorWriter(os.Stderr),
-		),
-		os.Args[1:],
-	).Exit()
+//TypeofFormat returns type of Format
+func TypeofFormat(s string) Format {
+	if f, ok := formatMap[strings.ToLower(s)]; ok {
+		return f
+	}
+	return FormUnknown
+}
+
+func (f Format) String() string {
+	for key, value := range formatMap {
+		if value == f {
+			return key
+		}
+	}
+	return "unknown"
 }
 
 /* Copyright 2018 Spiegel

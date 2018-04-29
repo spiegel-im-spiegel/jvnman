@@ -23,13 +23,12 @@ var (
 )
 
 var (
-	cfgFile string      //config file
-	cui     = rwi.New() //CUI instance
+	cfgFile string //config file
+	//cui     = rwi.New() //CUI instance
 )
 
 //newRootCmd returns cobra.Command instance for root command
 func newRootCmd(ui *rwi.RWI, args []string) *cobra.Command {
-	cui = ui
 	rootCmd := &cobra.Command{
 		Use:   Name,
 		Short: "JVN database management",
@@ -42,12 +41,13 @@ func newRootCmd(ui *rwi.RWI, args []string) *cobra.Command {
 	rootCmd.SetOutput(ui.ErrorWriter())
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jvnman.yaml)")
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose mode")
-	rootCmd.PersistentFlags().StringP("dbfile", "f", dbpath, "database file name")
+	rootCmd.PersistentFlags().BoolP("debug", "", false, "debug mode")
+	rootCmd.PersistentFlags().StringP("dbfile", "d", dbpath, "database file name")
 	viper.BindPFlag("dbfile", rootCmd.PersistentFlags().Lookup("dbfile"))
 	rootCmd.AddCommand(newVersionCmd(ui))
 	rootCmd.AddCommand(newInitCmd(ui))
 	rootCmd.AddCommand(newUpdateCmd(ui))
+	rootCmd.AddCommand(newListCmd(ui))
 
 	return rootCmd
 }
@@ -76,13 +76,13 @@ func Execute(ui *rwi.RWI, args []string) (exit exitcode.ExitCode) {
 	defer func() {
 		//panic hundling
 		if r := recover(); r != nil {
-			cui.OutputErrln("Panic:", r)
+			ui.OutputErrln("Panic:", r)
 			for depth := 0; ; depth++ {
 				pc, src, line, ok := runtime.Caller(depth)
 				if !ok {
 					break
 				}
-				cui.OutputErrln(" ->", depth, ":", runtime.FuncForPC(pc).Name(), ":", src, ":", line)
+				ui.OutputErrln(" ->", depth, ":", runtime.FuncForPC(pc).Name(), ":", src, ":", line)
 			}
 			exit = exitcode.Abnormal
 		}

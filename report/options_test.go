@@ -1,24 +1,29 @@
-package main
+package report
 
-import (
-	"os"
+import "testing"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/spiegel-im-spiegel/gocli/rwi"
-	"github.com/spiegel-im-spiegel/jvnman/facade"
-)
+func TestFormat(t *testing.T) {
+	testCase := []struct {
+		f Format
+		s string
+	}{
+		{f: FormUnknown, s: "unknown"},
+		{f: FormHTML, s: "html"},
+		{f: FormMarkdown, s: "markdown"},
+		{f: FormCSV, s: "csv"},
+	}
 
-//go:generate go-assets-builder -p report -s="/report/assets" -o report/assets.go report/assets/
-
-func main() {
-	facade.Execute(
-		rwi.New(
-			rwi.WithReader(os.Stdin),
-			rwi.WithWriter(os.Stdout),
-			rwi.WithErrorWriter(os.Stderr),
-		),
-		os.Args[1:],
-	).Exit()
+	for _, tc := range testCase {
+		f := TypeofFormat(tc.s)
+		if f != tc.f {
+			t.Errorf("TypeofFormat(\"%v\")  = %v, want %v.", tc.s, int(f), int(tc.f))
+		} else {
+			s := f.String()
+			if s != tc.s {
+				t.Errorf("Format.String(%v)  = \"%v\", want \"%v\".", int(f), s, tc.s)
+			}
+		}
+	}
 }
 
 /* Copyright 2018 Spiegel

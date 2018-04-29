@@ -8,14 +8,15 @@ import (
 	"github.com/spf13/viper"
 	"github.com/spiegel-im-spiegel/gocli/rwi"
 	"github.com/spiegel-im-spiegel/jvnman/database"
+	"github.com/spiegel-im-spiegel/jvnman/report"
 )
 
-//newUpdateCmd returns cobra.Command instance for show sub-command
-func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
-	updateCmd := &cobra.Command{
-		Use:   "update",
-		Short: "Update JVN database",
-		Long:  "Update JVN database",
+//newListCmd returns cobra.Command instance for show sub-command
+func newListCmd(ui *rwi.RWI) *cobra.Command {
+	listCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List JVN data",
+		Long:  "List JVN data",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbf := viper.GetString("dbfile")
 			if len(dbf) == 0 {
@@ -26,31 +27,47 @@ func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 				return errors.Wrap(err, "--debug")
 			} else if !debug {
 				debugf = nil
-			} else {
-				ui.OutputErrln("Update", dbf)
 			}
-			m, err := cmd.Flags().GetBool("month")
+			days, err := cmd.Flags().GetInt("range")
 			if err != nil {
-				return errors.Wrap(err, "--month")
+				return errors.Wrap(err, "--range")
+			}
+			score, err := cmd.Flags().GetFloat64("score")
+			if err != nil {
+				return errors.Wrap(err, "--score")
+			}
+			v, err := cmd.Flags().GetBool("verbose")
+			if err != nil {
+				return errors.Wrap(err, "--verbose")
+			}
+			f, err := cmd.Flags().GetString("form")
+			if err != nil {
+				return errors.Wrap(err, "--form")
+			}
+			form := report.TypeofFormat(f)
+			if form == report.FormUnknown {
+				return errors.New("not support format: " + f)
 			}
 
 			db, err := database.New(dbf, debugf)
 			if err != nil {
 				return err
 			}
-			ids, err := db.Update(m)
+			r, err := report.ListData(db, days, score, form, v)
 			if err != nil {
 				return err
 			}
-			if err := db.UpdateDetail(ids); err != nil {
-				return err
-			}
+			ui.WriteFrom(r)
+
 			return nil
 		},
 	}
-	updateCmd.Flags().BoolP("month", "m", false, "get the data for the past month")
+	listCmd.Flags().IntP("range", "r", 3, "list the data for the past days")
+	listCmd.Flags().Float64P("score", "s", 0.0, "minimum score of CVSS")
+	listCmd.Flags().BoolP("verbose", "v", false, "verbose mode")
+	listCmd.Flags().StringP("form", "f", "markdown", "output format: html/markdown/csv")
 
-	return updateCmd
+	return listCmd
 }
 
 /* Copyright 2018 Spiegel

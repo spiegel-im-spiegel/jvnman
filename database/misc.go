@@ -1,24 +1,23 @@
-package main
+package database
 
 import (
-	"os"
-
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/spiegel-im-spiegel/gocli/rwi"
-	"github.com/spiegel-im-spiegel/jvnman/facade"
+	"strconv"
+	"time"
 )
 
-//go:generate go-assets-builder -p report -s="/report/assets" -o report/assets.go report/assets/
+func getTimeFromUnixtime(t int64) time.Time {
+	if t > 0 {
+		return time.Unix(t, 0)
+	}
+	return time.Time{}
+}
 
-func main() {
-	facade.Execute(
-		rwi.New(
-			rwi.WithReader(os.Stdin),
-			rwi.WithWriter(os.Stdout),
-			rwi.WithErrorWriter(os.Stderr),
-		),
-		os.Args[1:],
-	).Exit()
+func getFloatFromString(s string) float64 {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0
+	}
+	return f
 }
 
 /* Copyright 2018 Spiegel

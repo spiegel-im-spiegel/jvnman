@@ -22,11 +22,15 @@ func newInitCmd(ui *rwi.RWI) *cobra.Command {
 			if len(dbf) == 0 {
 				return errors.Wrap(os.ErrInvalid, "--dbfile")
 			}
-			if v, err := cmd.Flags().GetBool("verbose"); err != nil {
-				return errors.Wrap(os.ErrInvalid, "--verbose")
-			} else if v {
-				ui.Outputln("Initialize", dbf)
+			debugf := ui.ErrorWriter()
+			if debug, err := cmd.Flags().GetBool("debug"); err != nil {
+				return errors.Wrap(err, "--debug")
+			} else if !debug {
+				debugf = nil
+			} else {
+				ui.OutputErrln("Initialize", dbf)
 			}
+
 			if err := os.Remove(dbf); err != nil {
 				switch e := err.(type) {
 				case *os.PathError:
@@ -42,14 +46,11 @@ func newInitCmd(ui *rwi.RWI) *cobra.Command {
 				}
 			}
 
-			db, err := database.New(dbf)
+			db, err := database.New(dbf, debugf)
 			if err != nil {
 				return err
 			}
-			defer db.Close()
-
-			err = db.Initialize()
-			return err
+			return db.Initialize()
 		},
 	}
 	//initCmd.PersistentFlags().StringP("dbfile", "f", dbpath, "database file name")

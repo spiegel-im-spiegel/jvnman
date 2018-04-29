@@ -1,0 +1,22 @@
+<table class="vulnview">
+<thead>
+<tr>
+	<th>ID</th>
+	<th>タイトル</th>
+	<th>想定される影響</th>
+	<th>深刻度</th>
+	<th>発見日</th>
+	<th>最終更新日</th>
+</tr>
+</thead>
+<tbody>
+{{ range . }}<tr>
+	<td><a href="{{ .URI }}">{{ .ID }}</a></td>
+	<td>{{ .Title }}</td>
+	<td>{{ .Impact }}</td>
+	<td>{{ .Severity }}</td>
+	<td>{{ .DatePublic }}</td>
+	<td>{{ .DateUpdate }}</td>
+</tr>{{ end }}
+</tbody>
+</table>

@@ -8,6 +8,12 @@
   version = "v1.4.7"
 
 [[projects]]
+  name = "github.com/go-gorp/gorp"
+  packages = ["."]
+  revision = "6032c66e0f5f155fd56216ed14cbbdd991034605"
+  version = "v2.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -156,6 +162,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "404486d57d8f16c5dda0a8e7fc7b659c4a63538424225ba233c913901ed651f9"
+  inputs-digest = "5eed1b8a2230421e90373ac1cc1fa48831b2c3734619d45b21de9ab03b336bdb"
   solver-name = "gps-cdcl"
   solver-version = 1
