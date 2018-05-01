@@ -37,6 +37,12 @@
   version = "v1.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/jessevdk/go-assets"
+  packages = ["."]
+  revision = "4f4301a06e153ff90e17793577ab6bf79f8dc5c5"
+
+[[projects]]
   name = "github.com/magiconair/properties"
   packages = ["."]
   revision = "c3beff4c2358b44d0493c7dda585e7db7ff28ae6"
@@ -135,10 +141,16 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/spiegel-im-spiegel/logf"
+  packages = ["."]
+  revision = "df53f2aea9f6d0ff8ca7afa6835afa8d2b9ce41e"
+  version = "v0.2.3"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
+  revision = "4adea008a5e5f820b6028611ae0b6b3fbcec534b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -162,6 +174,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5eed1b8a2230421e90373ac1cc1fa48831b2c3734619d45b21de9ab03b336bdb"
+  inputs-digest = "51ace84891d476cd53d5ffc336ef47278e310c49231f98695cb9571f6e83622c"
   solver-name = "gps-cdcl"
   solver-version = 1

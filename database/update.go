@@ -16,6 +16,8 @@ func (db *DB) Update(month bool) ([]string, error) {
 	if db == nil {
 		return ids, nil
 	}
+	logger := db.GetLogger()
+	logger.Println("Update JVN data:", db.GetDBFile())
 
 	jvnrss, err := db.getJVNRSS(db.getLastUpdate(), month)
 	if err != nil {
@@ -69,6 +71,8 @@ func (db *DB) UpdateDetail(ids []string) error {
 	if db == nil {
 		return nil
 	}
+	logger := db.GetLogger()
+	logger.Println("Update JVN data detail:", db.GetDBFile())
 	if len(ids) == 0 {
 		return nil
 	}

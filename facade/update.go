@@ -1,13 +1,9 @@
 package facade
 
 import (
-	"os"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/spiegel-im-spiegel/gocli/rwi"
-	"github.com/spiegel-im-spiegel/jvnman/database"
 )
 
 //newUpdateCmd returns cobra.Command instance for show sub-command
@@ -17,32 +13,22 @@ func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 		Short: "Update JVN database",
 		Long:  "Update JVN database",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dbf := viper.GetString("dbfile")
-			if len(dbf) == 0 {
-				return errors.Wrap(os.ErrInvalid, "--dbfile")
-			}
-			debugf := ui.ErrorWriter()
-			if debug, err := cmd.Flags().GetBool("debug"); err != nil {
-				return errors.Wrap(err, "--debug")
-			} else if !debug {
-				debugf = nil
-			} else {
-				ui.OutputErrln("Update", dbf)
-			}
 			m, err := cmd.Flags().GetBool("month")
 			if err != nil {
 				return errors.Wrap(err, "--month")
 			}
 
-			db, err := database.New(dbf, debugf)
+			db, err := getDB(cmd, ui.ErrorWriter(), false)
 			if err != nil {
 				return err
 			}
 			ids, err := db.Update(m)
 			if err != nil {
+				db.GetLogger().Fatalln(err)
 				return err
 			}
 			if err := db.UpdateDetail(ids); err != nil {
+				db.GetLogger().Fatalln(err)
 				return err
 			}
 			return nil

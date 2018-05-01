@@ -5,6 +5,12 @@ import "time"
 //GetVulnview returns Vulnview instance
 func (db *DB) GetVulnview(days int, score float64) ([]Vulnview, error) {
 	ds := []Vulnview{}
+	if db == nil {
+		return ds, nil
+	}
+	logger := db.GetLogger()
+	logger.Println("List JVN data:", db.GetDBFile())
+
 	orderby := " order by date_update desc,id"
 	if days > 0 {
 		t := time.Now()

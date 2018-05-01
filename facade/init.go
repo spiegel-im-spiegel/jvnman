@@ -1,14 +1,8 @@
 package facade
 
 import (
-	"os"
-	"syscall"
-
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/spiegel-im-spiegel/gocli/rwi"
-	"github.com/spiegel-im-spiegel/jvnman/database"
 )
 
 //newVersionCmd returns cobra.Command instance for show sub-command
@@ -18,39 +12,15 @@ func newInitCmd(ui *rwi.RWI) *cobra.Command {
 		Short: "Initialize JVN database",
 		Long:  "Initialize JVN database",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dbf := viper.GetString("dbfile")
-			if len(dbf) == 0 {
-				return errors.Wrap(os.ErrInvalid, "--dbfile")
-			}
-			debugf := ui.ErrorWriter()
-			if debug, err := cmd.Flags().GetBool("debug"); err != nil {
-				return errors.Wrap(err, "--debug")
-			} else if !debug {
-				debugf = nil
-			} else {
-				ui.OutputErrln("Initialize", dbf)
-			}
-
-			if err := os.Remove(dbf); err != nil {
-				switch e := err.(type) {
-				case *os.PathError:
-					if errno, ok := e.Err.(syscall.Errno); ok {
-						if errno != syscall.ENOENT {
-							return err
-						}
-					} else {
-						return err
-					}
-				default:
-					return err
-				}
-			}
-
-			db, err := database.New(dbf, debugf)
+			db, err := getDB(cmd, ui.ErrorWriter(), true)
 			if err != nil {
 				return err
 			}
-			return db.Initialize()
+			if err := db.Initialize(); err != nil {
+				db.GetLogger().Fatalln(err)
+				return err
+			}
+			return nil
 		},
 	}
 	//initCmd.PersistentFlags().StringP("dbfile", "f", dbpath, "database file name")

@@ -15,6 +15,8 @@ func (db *DB) Initialize() error {
 	if db == nil {
 		return nil
 	}
+	logger := db.GetLogger()
+	logger.Println("Initialize", db.GetDBFile())
 	tx, err := db.GetDB().Begin()
 	if err != nil {
 		return err

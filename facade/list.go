@@ -1,13 +1,9 @@
 package facade
 
 import (
-	"os"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/spiegel-im-spiegel/gocli/rwi"
-	"github.com/spiegel-im-spiegel/jvnman/database"
 	"github.com/spiegel-im-spiegel/jvnman/report"
 )
 
@@ -18,16 +14,6 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 		Short: "List JVN data",
 		Long:  "List JVN data",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dbf := viper.GetString("dbfile")
-			if len(dbf) == 0 {
-				return errors.Wrap(os.ErrInvalid, "--dbfile")
-			}
-			debugf := ui.ErrorWriter()
-			if debug, err := cmd.Flags().GetBool("debug"); err != nil {
-				return errors.Wrap(err, "--debug")
-			} else if !debug {
-				debugf = nil
-			}
 			days, err := cmd.Flags().GetInt("range")
 			if err != nil {
 				return errors.Wrap(err, "--range")
@@ -49,12 +35,13 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 				return errors.New("not support format: " + f)
 			}
 
-			db, err := database.New(dbf, debugf)
+			db, err := getDB(cmd, ui.ErrorWriter(), false)
 			if err != nil {
 				return err
 			}
 			r, err := report.ListData(db, days, score, form, v)
 			if err != nil {
+				db.GetLogger().Fatalln(err)
 				return err
 			}
 			ui.WriteFrom(r)
