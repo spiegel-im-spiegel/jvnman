@@ -11,12 +11,16 @@
   version = "0.8.*"
 
 [[constraint]]
+  name = "github.com/spiegel-im-spiegel/go-myjvn"
+  version = "0.2.*"
+
+[[constraint]]
   name = "github.com/spiegel-im-spiegel/logf"
   version = "0.2.*"
 
 [[constraint]]
-  name = "github.com/spiegel-im-spiegel/go-myjvn"
-  version = "0.2.*"
+  name = "github.com/lestrrat-go/file-rotatelogs"
+  version = "2.1.*"
 
 [[constraint]]
   name = "github.com/pkg/errors"

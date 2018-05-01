@@ -43,6 +43,18 @@
   revision = "4f4301a06e153ff90e17793577ab6bf79f8dc5c5"
 
 [[projects]]
+  name = "github.com/lestrrat-go/file-rotatelogs"
+  packages = ["."]
+  revision = "9df8b44f21785240553882138c5df2e9cc1db910"
+  version = "v2.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lestrrat/go-strftime"
+  packages = ["."]
+  revision = "ba3bf9c1d0421aa146564a632931730344f1f9f1"
+
+[[projects]]
   name = "github.com/magiconair/properties"
   packages = ["."]
   revision = "c3beff4c2358b44d0493c7dda585e7db7ff28ae6"
@@ -174,6 +186,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "51ace84891d476cd53d5ffc336ef47278e310c49231f98695cb9571f6e83622c"
+  inputs-digest = "b9435c1558c89551fae02fc99214d4116227318237494f5f5ef60297f868db3b"
   solver-name = "gps-cdcl"
   solver-version = 1

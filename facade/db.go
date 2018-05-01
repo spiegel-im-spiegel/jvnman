@@ -5,6 +5,7 @@ import (
 	"os"
 	"syscall"
 
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -20,7 +21,7 @@ func getDB(cmd *cobra.Command, defWriter io.Writer, cflag bool) (*database.DB, e
 	logfname := viper.GetString("logfile")
 	logf := defWriter
 	if len(logfname) > 0 {
-		file, err := os.OpenFile(logfname, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+		file, err := rotatelogs.New(logfname)
 		if err != nil {
 			return nil, err
 		}
