@@ -8,7 +8,6 @@ import (
 	"io"
 	"strings"
 	text "text/template"
-	"time"
 
 	"github.com/spiegel-im-spiegel/jvnman/database"
 )
@@ -48,16 +47,16 @@ func ListData(db *database.DB, days int, score float64, f Format, verbose bool) 
 	list := []listInfo{}
 	for _, v := range view {
 		l := listInfo{
-			ID:          v.ID,
-			Title:       v.Title,
-			Description: v.Description,
-			URI:         v.URI,
-			Impact:      v.Impact,
-			Solution:    v.Solution,
-			Severity:    fmt.Sprintf("%v (%.1f)", getSeverityJa(v.CVSSSeverity), v.CVSSScore),
-			DatePublic:  time.Unix(v.DatePublic, 0).Format("2006年1月2日"),
-			DatePublish: time.Unix(v.DatePublish, 0).Format("2006年1月2日"),
-			DateUpdate:  time.Unix(v.DateUpdate, 0).Format("2006年1月2日"),
+			ID:          v.ID.String,
+			Title:       v.Title.String,
+			Description: v.Description.String,
+			URI:         v.URI.String,
+			Impact:      v.Impact.String,
+			Solution:    v.Solution.String,
+			Severity:    fmt.Sprintf("%v (%.1f)", getSeverityJa(v.CVSSSeverity.String), v.CVSSScore.Float64),
+			DatePublic:  v.GetDatePublic().Format("2006年1月2日"),
+			DatePublish: v.GetDatePublish().Format("2006年1月2日"),
+			DateUpdate:  v.GetDateUpdate().Format("2006年1月2日"),
 		}
 		list = append(list, l)
 	}

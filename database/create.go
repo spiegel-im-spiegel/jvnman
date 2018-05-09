@@ -23,18 +23,7 @@ func (db *DB) Initialize() error {
 	}
 
 	for _, s := range stmtsCreate {
-		err := func(st string) error {
-			stmt, err := tx.Prepare(st)
-			if err != nil {
-				return err
-			}
-			defer stmt.Close()
-			if _, err := stmt.Exec(); err != nil {
-				return err
-			}
-			return nil
-		}(s)
-		if err != nil {
+		if _, err = tx.Exec(s); err != nil {
 			tx.Rollback()
 			return err
 		}

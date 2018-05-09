@@ -4,6 +4,7 @@ import (
 	"html"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/spiegel-im-spiegel/go-myjvn/rss"
 	"github.com/spiegel-im-spiegel/go-myjvn/rss/option"
 	"github.com/spiegel-im-spiegel/go-myjvn/status"
@@ -44,14 +45,14 @@ func (db *DB) Update(month bool) ([]string, error) {
 			}
 		} else {
 			ds := obj.(*Vulnlist)
-			if itm.Modified.After(getTimeFromUnixtime(ds.DateUpdate)) {
-				ds.Title = html.UnescapeString(itm.Title)
-				ds.Description = html.UnescapeString(itm.Description)
-				ds.URI = html.UnescapeString(itm.Link)
-				ds.Creator = html.UnescapeString(itm.Creator)
-				ds.DatePublic = itm.Date.Unix()
-				ds.DatePublish = itm.Issued.Unix()
-				ds.DateUpdate = itm.Modified.Unix()
+			if itm.Modified.After(ds.GetDateUpdate()) {
+				ds.Title = Text(html.UnescapeString(itm.Title))
+				ds.Description = Text(html.UnescapeString(itm.Description))
+				ds.URI = Text(html.UnescapeString(itm.Link))
+				ds.Creator = Text(html.UnescapeString(itm.Creator))
+				ds.DatePublic = Integer(itm.Date.Unix())
+				ds.DatePublish = Integer(itm.Issued.Unix())
+				ds.DateUpdate = Integer(itm.Modified.Unix())
 				if _, err = tx.Update(ds); err != nil {
 					break
 				}
@@ -98,17 +99,19 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 		if obj != nil {
 			ds := obj.(*Vulnlist)
-			ds.Impact = html.UnescapeString(vuln.VulinfoData.Impact.Description)
-			ds.Solution = html.UnescapeString(vuln.VulinfoData.Solution.Description)
-			ds.DatePublic = vuln.VulinfoData.DatePublic.Unix()
-			ds.DatePublish = vuln.VulinfoData.DateFirstPublished.Unix()
+			ds.Impact = Text(html.UnescapeString(vuln.VulinfoData.Impact.Description))
+			ds.Solution = Text(html.UnescapeString(vuln.VulinfoData.Solution.Description))
+			ds.DatePublic = Integer(vuln.VulinfoData.DatePublic.Unix())
+			ds.DatePublish = Integer(vuln.VulinfoData.DateFirstPublished.Unix())
 			if _, err = tx.Update(ds); err != nil {
 				break
 			}
 		}
 
 		//Affected info.
-		if _, err = tx.Exec("delete from affected where id = ?", vuln.VulinfoID); err != nil {
+		if psql, args, err := squirrel.Delete("affected").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			break
+		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
 		}
 		for _, affected := range vuln.VulinfoData.Affected {
@@ -126,7 +129,9 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//Impact info
-		if _, err = tx.Exec("delete from cvss where id = ?", vuln.VulinfoID); err != nil {
+		if psql, args, err := squirrel.Delete("cvss").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			break
+		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
 		}
 		for _, cvss := range vuln.VulinfoData.Impact.CVSS {
@@ -139,7 +144,9 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//Related info.
-		if _, err = tx.Exec("delete from related where id = ?", vuln.VulinfoID); err != nil {
+		if psql, args, err := squirrel.Delete("related").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			break
+		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
 		}
 		for _, related := range vuln.VulinfoData.Related {
@@ -152,11 +159,13 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//History info.
-		if _, err = tx.Exec("delete from history where id = ?", vuln.VulinfoID); err != nil {
+		if psql, args, err := squirrel.Delete("history").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			break
+		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
 		}
 		for _, history := range vuln.VulinfoData.History {
-			if err = tx.Insert(NewHistory(vuln.VulinfoID, history.HistoryNo, html.UnescapeString(history.Description), history.DateTime.Unix())); err != nil {
+			if err = tx.Insert(NewHistory(vuln.VulinfoID, int64(history.HistoryNo), html.UnescapeString(history.Description), history.DateTime.Unix())); err != nil {
 				break
 			}
 		}

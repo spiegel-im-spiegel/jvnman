@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "v1"
+  name = "github.com/Masterminds/squirrel"
+  packages = ["."]
+  revision = "40ef4f86bf59a996c348a9f56ddb4c4d3d49a6df"
+
+[[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
@@ -41,6 +47,18 @@
   name = "github.com/jessevdk/go-assets"
   packages = ["."]
   revision = "4f4301a06e153ff90e17793577ab6bf79f8dc5c5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lann/builder"
+  packages = ["."]
+  revision = "1b87b36280d04fe7882d1512bf038ea2967ad534"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lann/ps"
+  packages = ["."]
+  revision = "62de8c46ede02a7675c4c79c84883eb164cb71e3"
 
 [[projects]]
   name = "github.com/lestrrat-go/file-rotatelogs"
@@ -186,6 +204,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b9435c1558c89551fae02fc99214d4116227318237494f5f5ef60297f868db3b"
+  inputs-digest = "c1dd297595b5927b88e3906c03b3a0bc3aba838990e7d0e2754216c88a9af468"
   solver-name = "gps-cdcl"
   solver-version = 1

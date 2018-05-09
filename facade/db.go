@@ -28,6 +28,11 @@ func getDB(cmd *cobra.Command, defWriter io.Writer, cflag bool) (*database.DB, e
 		logf = file
 	}
 	logger := database.NewLogger(logf, level)
+	if len(logfname) > 0 {
+		logger.Println("logfile:", logfname)
+	}
+	logger.Println("loglevel:", level)
+	logger.Println("dbfile:", dbf)
 	if cflag {
 		logger.Println("Remove", dbf)
 		if err := os.Remove(dbf); err != nil {

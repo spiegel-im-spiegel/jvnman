@@ -1,6 +1,10 @@
 package database
 
-import "time"
+import (
+	"time"
+
+	"github.com/Masterminds/squirrel"
+)
 
 //GetVulnview returns Vulnview instance
 func (db *DB) GetVulnview(days int, score float64) ([]Vulnview, error) {
@@ -8,20 +12,18 @@ func (db *DB) GetVulnview(days int, score float64) ([]Vulnview, error) {
 	if db == nil {
 		return ds, nil
 	}
-	logger := db.GetLogger()
-	logger.Println("List JVN data:", db.GetDBFile())
-
-	orderby := " order by date_update desc,id"
+	builder := squirrel.Select("*").From("vulnview").OrderBy("date_update desc", "id")
+	and := squirrel.And{}
+	and = append(and, squirrel.GtOrEq{"cvss_score": score})
 	if days > 0 {
 		t := time.Now()
 		start := time.Date(t.Year(), t.Month(), t.Day()-days, 0, 0, 0, 0, time.UTC)
-		if _, err := db.GetDB().Select(&ds, "select * from vulnview where date_update >= ? and cvss_score >= ?"+orderby, start.Unix(), score); err != nil {
-			return nil, err
-		}
-	} else {
-		if _, err := db.GetDB().Select(&ds, "select * from vulnview where cvss_score >= ?"+orderby, score); err != nil {
-			return nil, err
-		}
+		and = append(and, squirrel.GtOrEq{"date_update": start.Unix()})
+	}
+	if psql, args, err := builder.Where(and).ToSql(); err != nil {
+		return ds, err
+	} else if _, err = db.GetDB().Select(&ds, psql, args); err != nil {
+		return ds, err
 	}
 	return ds, nil
 }
