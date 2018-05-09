@@ -4,7 +4,7 @@ import (
 	"html"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"gopkg.in/Masterminds/squirrel.v1"
 	"github.com/spiegel-im-spiegel/go-myjvn/rss"
 	"github.com/spiegel-im-spiegel/go-myjvn/rss/option"
 	"github.com/spiegel-im-spiegel/go-myjvn/status"

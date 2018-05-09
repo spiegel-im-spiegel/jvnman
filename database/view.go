@@ -1,28 +1,52 @@
 package database
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"gopkg.in/Masterminds/squirrel.v1"
 )
 
 //GetVulnview returns Vulnview instance
-func (db *DB) GetVulnview(days int, score float64) ([]Vulnview, error) {
+func (db *DB) GetVulnview(days int, score float64, product string) ([]Vulnview, error) {
 	ds := []Vulnview{}
 	if db == nil {
 		return ds, nil
 	}
-	builder := squirrel.Select("*").From("vulnview").OrderBy("date_update desc", "id")
-	and := squirrel.And{}
-	and = append(and, squirrel.GtOrEq{"cvss_score": score})
+	bldr := squirrel.Select(
+		"vulnview.id as id",
+		"vulnview.title as title",
+		"vulnview.description as description",
+		"vulnview.uri as uri",
+		"vulnview.impact as impact",
+		"vulnview.solution as solution",
+		"vulnview.cvss_score as cvss_score",
+		"vulnview.cvss_severity as cvss_severity",
+		"vulnview.date_public as date_public",
+		"vulnview.date_publish as date_publish",
+		"vulnview.date_update as date_update ",
+	).From("vulnview").OrderBy("date_update desc", "id")
+
+	//make "where" condition
 	if days > 0 {
 		t := time.Now()
-		start := time.Date(t.Year(), t.Month(), t.Day()-days, 0, 0, 0, 0, time.UTC)
-		and = append(and, squirrel.GtOrEq{"date_update": start.Unix()})
+		bldr = bldr.Where(squirrel.GtOrEq{"date_update": time.Date(t.Year(), t.Month(), t.Day()-days, 0, 0, 0, 0, time.UTC).Unix()})
 	}
-	if psql, args, err := builder.Where(and).ToSql(); err != nil {
+	if score > 0 {
+		bldr = bldr.Where(squirrel.GtOrEq{"cvss_score": score})
+	}
+	if len(product) > 0 {
+		sq, args, err := squirrel.Select("id").Distinct().From("affected").Where(squirrel.Expr("product_name like ?", "%"+product+"%")).ToSql()
+		if err != nil {
+			return ds, err
+		}
+		bldr = bldr.Join(fmt.Sprintf("(%s) affect on affect.id = vulnview.id", sq), args...)
+	}
+
+	//query
+	if psql, args, err := bldr.ToSql(); err != nil {
 		return ds, err
-	} else if _, err = db.GetDB().Select(&ds, psql, args); err != nil {
+	} else if _, err = db.GetDB().Select(&ds, psql, args...); err != nil {
 		return ds, err
 	}
 	return ds, nil

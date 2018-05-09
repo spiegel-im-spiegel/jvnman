@@ -34,12 +34,16 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 			if form == report.FormUnknown {
 				return errors.New("not support format: " + f)
 			}
+			p, err := cmd.Flags().GetString("product")
+			if err != nil {
+				return errors.Wrap(err, "--product")
+			}
 
 			db, err := getDB(cmd, ui.ErrorWriter(), false)
 			if err != nil {
 				return err
 			}
-			r, err := report.ListData(db, days, score, form, v)
+			r, err := report.ListData(db, days, score, p, form, v)
 			if err != nil {
 				db.GetLogger().Fatalln(err)
 				return err
@@ -53,6 +57,7 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 	listCmd.Flags().Float64P("score", "s", 0.0, "minimum score of CVSS")
 	listCmd.Flags().BoolP("verbose", "v", false, "verbose mode")
 	listCmd.Flags().StringP("form", "f", "markdown", "output format: html/markdown/csv")
+	listCmd.Flags().StringP("product", "p", "", "product name")
 
 	return listCmd
 }
