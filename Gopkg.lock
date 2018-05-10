@@ -97,6 +97,12 @@
   version = "v0.8.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/shurcooL/sanitized_anchor_name"
+  packages = ["."]
+  revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
+
+[[projects]]
   name = "github.com/spf13/afero"
   packages = [
     ".",
@@ -196,6 +202,12 @@
   version = "2.1"
 
 [[projects]]
+  name = "gopkg.in/russross/blackfriday.v2"
+  packages = ["."]
+  revision = "cadec560ec52d93835bf2f15bd794700d3a2473b"
+  version = "v2.0.0"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -204,6 +216,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "64f9043e65670a6e347b43c4765ee927f61567c32b580f5f1c3476ac389b8693"
+  inputs-digest = "5a687dd3b086b64c846a26d5fcad6b88ca55c03782f94642798a57d963c4df4e"
   solver-name = "gps-cdcl"
   solver-version = 1

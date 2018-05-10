@@ -25,7 +25,7 @@ var (
 		"vulnview.date_public as date_public",
 		"vulnview.date_publish as date_publish",
 		"vulnview.date_update as date_update ",
-	).From("vulnview").OrderBy("date_update desc", "id")
+	).From("vulnview")
 )
 
 //Vulnlist is definition of vulnlist table

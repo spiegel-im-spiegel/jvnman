@@ -11,8 +11,8 @@ import (
 func newListCmd(ui *rwi.RWI) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list",
-		Short: "List JVN data",
-		Long:  "List JVN data",
+		Short: "List vulnerability data",
+		Long:  "List vulnerability data",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db, err := getDB(cmd, ui.ErrorWriter(), false)
 			if err != nil {

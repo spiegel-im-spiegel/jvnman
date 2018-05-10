@@ -12,7 +12,8 @@ import (
 	"github.com/spiegel-im-spiegel/jvnman/database"
 )
 
-type listInfo struct {
+//VulnInfo is dataset for report
+type VulnInfo struct {
 	ID          string
 	Title       string
 	Description string
@@ -40,13 +41,13 @@ var csvHeader = []string{
 
 //ListData returns io.Reader for listing
 func ListData(db *database.DB, days int, score float64, product, cve string, f Format, verbose bool) (io.Reader, error) {
-	view, err := db.GetVulnview(days, score, product, cve)
+	view, err := db.GetVulnviewList(days, score, product, cve)
 	if err != nil {
 		return nil, err
 	}
-	list := []listInfo{}
+	list := []VulnInfo{}
 	for _, v := range view {
-		l := listInfo{
+		l := VulnInfo{
 			ID:          v.ID.String,
 			Title:       v.Title.String,
 			Description: v.Description.String,

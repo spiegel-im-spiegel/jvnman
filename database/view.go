@@ -8,7 +8,20 @@ import (
 )
 
 //GetVulnview returns Vulnview instance
-func (db *DB) GetVulnview(days int, score float64, product, cve string) ([]Vulnview, error) {
+func (db *DB) GetVulnview(id string) *Vulnview {
+	ds := Vulnview{}
+	if psql, args, err := selectVulnview.Where(squirrel.Eq{"id": id}).ToSql(); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	} else if err := db.GetDB().SelectOne(&ds, psql, args...); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	}
+	return &ds
+}
+
+//GetVulnviewList returns []Vulnview instance
+func (db *DB) GetVulnviewList(days int, score float64, product, cve string) ([]Vulnview, error) {
 	ds := []Vulnview{}
 	if db == nil {
 		return ds, nil
@@ -41,7 +54,7 @@ func (db *DB) GetVulnview(days int, score float64, product, cve string) ([]Vulnv
 	}
 
 	//query
-	if psql, args, err := bldr.ToSql(); err != nil {
+	if psql, args, err := bldr.OrderBy("date_update desc", "id").ToSql(); err != nil {
 		return ds, err
 	} else if _, err = db.GetDB().Select(&ds, psql, args...); err != nil {
 		return ds, err

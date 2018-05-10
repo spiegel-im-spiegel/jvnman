@@ -9,8 +9,8 @@ import (
 func newInitCmd(ui *rwi.RWI) *cobra.Command {
 	initCmd := &cobra.Command{
 		Use:   "init",
-		Short: "Initialize JVN database",
-		Long:  "Initialize JVN database",
+		Short: "Initialize vulnerability database",
+		Long:  "Initialize vulnerability database",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db, err := getDB(cmd, ui.ErrorWriter(), true)
 			if err != nil {

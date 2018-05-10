@@ -10,8 +10,8 @@ import (
 func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 	updateCmd := &cobra.Command{
 		Use:   "update",
-		Short: "Update JVN database",
-		Long:  "Update JVN database",
+		Short: "Update vulnerability database",
+		Long:  "Update vulnerability database",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db, err := getDB(cmd, ui.ErrorWriter(), false)
 			if err != nil {
