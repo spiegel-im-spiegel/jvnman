@@ -14,18 +14,31 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 		Short: "List JVN data",
 		Long:  "List JVN data",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			db, err := getDB(cmd, ui.ErrorWriter(), false)
+			if err != nil {
+				return err
+			}
+
 			days, err := cmd.Flags().GetInt("range")
 			if err != nil {
 				return errors.Wrap(err, "--range")
 			}
+			db.GetLogger().Println("range:", days, "days")
 			score, err := cmd.Flags().GetFloat64("score")
 			if err != nil {
 				return errors.Wrap(err, "--score")
 			}
-			v, err := cmd.Flags().GetBool("verbose")
+			db.GetLogger().Println("CVSS score:", score)
+			p, err := cmd.Flags().GetString("product")
 			if err != nil {
-				return errors.Wrap(err, "--verbose")
+				return errors.Wrap(err, "--product")
 			}
+			db.GetLogger().Println("product:", p)
+			c, err := cmd.Flags().GetString("cve")
+			if err != nil {
+				return errors.Wrap(err, "--cve")
+			}
+			db.GetLogger().Println("cve:", c)
 			f, err := cmd.Flags().GetString("form")
 			if err != nil {
 				return errors.Wrap(err, "--form")
@@ -34,16 +47,14 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 			if form == report.FormUnknown {
 				return errors.New("not support format: " + f)
 			}
-			p, err := cmd.Flags().GetString("product")
+			db.GetLogger().Println("form:", form.String())
+			v, err := cmd.Flags().GetBool("verbose")
 			if err != nil {
-				return errors.Wrap(err, "--product")
+				return errors.Wrap(err, "--verbose")
 			}
+			db.GetLogger().Println("verbose:", v)
 
-			db, err := getDB(cmd, ui.ErrorWriter(), false)
-			if err != nil {
-				return err
-			}
-			r, err := report.ListData(db, days, score, p, form, v)
+			r, err := report.ListData(db, days, score, p, c, form, v)
 			if err != nil {
 				db.GetLogger().Fatalln(err)
 				return err
@@ -58,6 +69,7 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 	listCmd.Flags().BoolP("verbose", "v", false, "verbose mode")
 	listCmd.Flags().StringP("form", "f", "markdown", "output format: html/markdown/csv")
 	listCmd.Flags().StringP("product", "p", "", "product name")
+	listCmd.Flags().StringP("cve", "c", "", "CVE-ID (see https://cve.mitre.org/)")
 
 	return listCmd
 }

@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 
-	"github.com/go-gorp/gorp"
+	"gopkg.in/gorp.v2"
 	myjvn "github.com/spiegel-im-spiegel/go-myjvn"
 	"github.com/spiegel-im-spiegel/logf"
 )

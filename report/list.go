@@ -39,8 +39,8 @@ var csvHeader = []string{
 }
 
 //ListData returns io.Reader for listing
-func ListData(db *database.DB, days int, score float64, product string, f Format, verbose bool) (io.Reader, error) {
-	view, err := db.GetVulnview(days, score, product)
+func ListData(db *database.DB, days int, score float64, product, cve string, f Format, verbose bool) (io.Reader, error) {
+	view, err := db.GetVulnview(days, score, product, cve)
 	if err != nil {
 		return nil, err
 	}

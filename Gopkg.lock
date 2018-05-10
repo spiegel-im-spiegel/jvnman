@@ -8,12 +8,6 @@
   version = "v1.4.7"
 
 [[projects]]
-  name = "github.com/go-gorp/gorp"
-  packages = ["."]
-  revision = "6032c66e0f5f155fd56216ed14cbbdd991034605"
-  version = "v2.1"
-
-[[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -152,8 +146,8 @@
     "values",
     "vuldef"
   ]
-  revision = "5efca286ed51fb9083cd8c8a627e2a6f0e0af3bf"
-  version = "v0.2.1"
+  revision = "75ca7d4e4d4fa82500c9c9e9ec4685e8a4118121"
+  version = "v0.2.2"
 
 [[projects]]
   name = "github.com/spiegel-im-spiegel/gocli"
@@ -174,7 +168,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "7db1c3b1a98089d0071c84f646ff5c96aad43682"
+  revision = "64746a42f36bf0832f86b76004f1699dbeb33e4f"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -196,6 +190,12 @@
   revision = "40ef4f86bf59a996c348a9f56ddb4c4d3d49a6df"
 
 [[projects]]
+  name = "gopkg.in/gorp.v2"
+  packages = ["."]
+  revision = "4df78490a9aa9a78b9b02b0c913df8dc1954faee"
+  version = "2.1"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -204,6 +204,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1c6f1ebbf292799660effc90ffa1140779f803bf0b9070139a23ad85de7396d2"
+  inputs-digest = "64f9043e65670a6e347b43c4765ee927f61567c32b580f5f1c3476ac389b8693"
   solver-name = "gps-cdcl"
   solver-version = 1

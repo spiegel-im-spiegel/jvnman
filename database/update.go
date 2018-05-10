@@ -4,11 +4,11 @@ import (
 	"html"
 	"time"
 
-	"gopkg.in/Masterminds/squirrel.v1"
 	"github.com/spiegel-im-spiegel/go-myjvn/rss"
 	"github.com/spiegel-im-spiegel/go-myjvn/rss/option"
 	"github.com/spiegel-im-spiegel/go-myjvn/status"
 	"github.com/spiegel-im-spiegel/go-myjvn/vuldef"
+	"gopkg.in/Masterminds/squirrel.v1"
 )
 
 //Update returns result for updating JVN data
@@ -33,7 +33,7 @@ func (db *DB) Update(month bool) ([]string, error) {
 	//insert and update data
 	err = nil
 	for _, itm := range jvnrss.Items {
-		obj, errGet := db.GetDB().Get(Vulnlist{}, itm.Identifier)
+		obj, errGet := tx.Get(Vulnlist{}, itm.Identifier)
 		if errGet != nil {
 			err = errGet
 			break
@@ -92,7 +92,7 @@ func (db *DB) UpdateDetail(ids []string) error {
 	err = nil
 	for _, vuln := range vulnInfo.Vulinfo {
 		//update vulnlist
-		obj, errGet := db.GetDB().Get(Vulnlist{}, vuln.VulinfoID)
+		obj, errGet := tx.Get(Vulnlist{}, vuln.VulinfoID)
 		if errGet != nil {
 			err = errGet
 			break
@@ -109,7 +109,8 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//Affected info.
-		if psql, args, err := squirrel.Delete("affected").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+		if psql, args, errQry := deleteAffected.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			err = errQry
 			break
 		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
@@ -129,7 +130,8 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//Impact info
-		if psql, args, err := squirrel.Delete("cvss").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+		if psql, args, errQry := deleteCVSS.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			err = errQry
 			break
 		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
@@ -144,7 +146,8 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//Related info.
-		if psql, args, err := squirrel.Delete("related").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+		if psql, args, errQry := deleteRelated.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			err = errQry
 			break
 		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
@@ -159,7 +162,8 @@ func (db *DB) UpdateDetail(ids []string) error {
 		}
 
 		//History info.
-		if psql, args, err := squirrel.Delete("history").Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+		if psql, args, errQry := deleteHistory.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			err = errQry
 			break
 		} else if _, err = tx.Exec(psql, args...); err != nil {
 			break
@@ -183,39 +187,51 @@ func (db *DB) UpdateDetail(ids []string) error {
 
 func (db *DB) getLastUpdate() time.Time {
 	var ds struct {
-		utime int64
+		Last int64 `db:"last"`
 	}
-	if err := db.GetDB().SelectOne(&ds, "select max(date_update) as last from vulnlist"); err != nil {
+	if psql, _, err := squirrel.Select("max(date_update) as last").From("vulnlist").ToSql(); err != nil {
+		db.GetLogger().Errorln(err)
+		return time.Time{}
+	} else if err := db.GetDB().SelectOne(&ds, psql); err != nil {
+		db.GetLogger().Println(err)
 		return time.Time{}
 	}
-	return getTimeFromUnixtime(ds.utime)
+	dt := getTimeFromUnixtime(ds.Last)
+	if dt.IsZero() {
+		db.GetLogger().Println("no data")
+	} else {
+		db.GetLogger().Println("last update:", dt)
+	}
+	return dt
 }
 
 func (db *DB) getJVNRSS(start time.Time, month bool) (*rss.JVNRSS, error) {
 	startItem := 1
 	maxItem := 0
-	mode := option.RangeWeek
+	var opt *option.Option
 	if month {
-		mode = option.RangeMonth
+		opt = option.New(
+			option.WithStartItem(startItem),
+			option.WithRangeDatePublicMode(option.NoRange),
+			option.WithRangeDateFirstPublishedMode(option.NoRange),
+			option.WithRangeDatePublishedMode(option.RangeMonth),
+		)
+	} else if !start.IsZero() {
+		opt = option.New(
+			option.WithStartItem(startItem),
+			option.WithRangeDatePublicMode(option.NoRange),
+			option.WithRangeDateFirstPublishedMode(option.NoRange),
+			option.WithRangeDatePublishedPeriod(start, time.Now()),
+		)
+	} else {
+		opt = option.New(
+			option.WithStartItem(startItem),
+			option.WithRangeDatePublicMode(option.NoRange),
+			option.WithRangeDateFirstPublishedMode(option.NoRange),
+		)
 	}
 	jvnrss := (*rss.JVNRSS)(nil)
 	for {
-		var opt *option.Option
-		if start.IsZero() {
-			opt = option.New(
-				option.WithRangeDatePublicMode(option.NoRange),
-				option.WithRangeDatePublishedMode(mode),
-				option.WithRangeDateFirstPublishedMode(option.NoRange),
-				option.WithStartItem(startItem),
-			)
-		} else {
-			opt = option.New(
-				option.WithRangeDatePublicMode(option.NoRange),
-				option.WithRangeDatePublishedPeriod(start, time.Now()),
-				option.WithRangeDateFirstPublishedMode(option.NoRange),
-				option.WithStartItem(startItem),
-			)
-		}
 		if startItem == 1 {
 			xml, err := db.GetAPI().VulnOverviewListXML(opt)
 			if err != nil {
@@ -236,6 +252,7 @@ func (db *DB) getJVNRSS(start time.Time, month bool) (*rss.JVNRSS, error) {
 			startItem += len(r.Items)
 			jvnrss = r
 		} else {
+			opt.SetStart(startItem)
 			r, err := db.GetAPI().VulnOverviewList(opt)
 			if err != nil {
 				return jvnrss, err

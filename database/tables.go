@@ -3,6 +3,29 @@ package database
 import (
 	"database/sql"
 	"time"
+
+	squirrel "gopkg.in/Masterminds/squirrel.v1"
+)
+
+//SQL statements
+var (
+	deleteAffected = squirrel.Delete("affected")
+	deleteCVSS     = squirrel.Delete("cvss")
+	deleteRelated  = squirrel.Delete("related")
+	deleteHistory  = squirrel.Delete("history")
+	selectVulnview = squirrel.Select(
+		"vulnview.id as id",
+		"vulnview.title as title",
+		"vulnview.description as description",
+		"vulnview.uri as uri",
+		"vulnview.impact as impact",
+		"vulnview.solution as solution",
+		"vulnview.cvss_score as cvss_score",
+		"vulnview.cvss_severity as cvss_severity",
+		"vulnview.date_public as date_public",
+		"vulnview.date_publish as date_publish",
+		"vulnview.date_update as date_update ",
+	).From("vulnview").OrderBy("date_update desc", "id")
 )
 
 //Vulnlist is definition of vulnlist table

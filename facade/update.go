@@ -13,15 +13,17 @@ func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 		Short: "Update JVN database",
 		Long:  "Update JVN database",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := cmd.Flags().GetBool("month")
-			if err != nil {
-				return errors.Wrap(err, "--month")
-			}
-
 			db, err := getDB(cmd, ui.ErrorWriter(), false)
 			if err != nil {
 				return err
 			}
+
+			m, err := cmd.Flags().GetBool("month")
+			if err != nil {
+				return errors.Wrap(err, "--month")
+			}
+			db.GetLogger().Println("month:", m)
+
 			ids, err := db.Update(m)
 			if err != nil {
 				db.GetLogger().Fatalln(err)

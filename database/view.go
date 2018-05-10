@@ -8,24 +8,12 @@ import (
 )
 
 //GetVulnview returns Vulnview instance
-func (db *DB) GetVulnview(days int, score float64, product string) ([]Vulnview, error) {
+func (db *DB) GetVulnview(days int, score float64, product, cve string) ([]Vulnview, error) {
 	ds := []Vulnview{}
 	if db == nil {
 		return ds, nil
 	}
-	bldr := squirrel.Select(
-		"vulnview.id as id",
-		"vulnview.title as title",
-		"vulnview.description as description",
-		"vulnview.uri as uri",
-		"vulnview.impact as impact",
-		"vulnview.solution as solution",
-		"vulnview.cvss_score as cvss_score",
-		"vulnview.cvss_severity as cvss_severity",
-		"vulnview.date_public as date_public",
-		"vulnview.date_publish as date_publish",
-		"vulnview.date_update as date_update ",
-	).From("vulnview").OrderBy("date_update desc", "id")
+	bldr := selectVulnview
 
 	//make "where" condition
 	if days > 0 {
@@ -36,11 +24,20 @@ func (db *DB) GetVulnview(days int, score float64, product string) ([]Vulnview, 
 		bldr = bldr.Where(squirrel.GtOrEq{"cvss_score": score})
 	}
 	if len(product) > 0 {
-		sq, args, err := squirrel.Select("id").Distinct().From("affected").Where(squirrel.Expr("product_name like ?", "%"+product+"%")).ToSql()
+		likeProduct := "%" + product + "%"
+		cond := squirrel.Or{squirrel.Expr("name like ?", likeProduct), squirrel.Expr("product_name like ?", likeProduct)}
+		sq, args, err := squirrel.Select("id").Distinct().From("affected").Where(cond).ToSql()
 		if err != nil {
 			return ds, err
 		}
 		bldr = bldr.Join(fmt.Sprintf("(%s) affect on affect.id = vulnview.id", sq), args...)
+	}
+	if len(cve) > 0 {
+		sq, args, err := squirrel.Select("id").Distinct().From("related").Where(squirrel.Eq{"vulinfo_id": cve}).ToSql()
+		if err != nil {
+			return ds, err
+		}
+		bldr = bldr.Join(fmt.Sprintf("(%s) relate on relate.id = vulnview.id", sq), args...)
 	}
 
 	//query

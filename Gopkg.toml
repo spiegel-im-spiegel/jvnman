@@ -31,7 +31,7 @@
   version = "1.6.*"
 
 [[constraint]]
-  name = "github.com/go-gorp/gorp"
+  name = "gopkg.in/gorp.v2"
   version = "2.1.*"
 
 [[constraint]]
