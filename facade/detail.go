@@ -39,8 +39,12 @@ func newDetailCmd(ui *rwi.RWI) *cobra.Command {
 				return errors.New("not support format: " + f)
 			}
 			db.GetLogger().Println("form:", form.String())
+			tf, err := cmd.Flags().GetString("template")
+			if err != nil {
+				return errors.Wrap(err, "--template")
+			}
 
-			r, err := report.Detail(db, id, form)
+			r, err := report.Detail(db, id, tf, form)
 			if err != nil {
 				db.GetLogger().Fatalln(err)
 				return err
@@ -51,6 +55,7 @@ func newDetailCmd(ui *rwi.RWI) *cobra.Command {
 		},
 	}
 	detailCmd.Flags().StringP("form", "f", "markdown", "output format: html/markdown")
+	detailCmd.Flags().StringP("template", "t", "", "template file path")
 
 	return detailCmd
 }

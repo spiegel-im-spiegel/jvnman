@@ -47,6 +47,10 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 	}
 	list := []VulnInfo{}
 	for _, v := range view {
+		severity := ""
+		if len(v.CVSSSeverity.String) > 0 {
+			severity = fmt.Sprintf("%v (%.1f)", getSeverityJa(v.CVSSSeverity.String), v.CVSSScore.Float64)
+		}
 		l := VulnInfo{
 			ID:          v.ID.String,
 			Title:       v.Title.String,
@@ -54,7 +58,7 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 			URI:         v.URI.String,
 			Impact:      v.Impact.String,
 			Solution:    v.Solution.String,
-			Severity:    fmt.Sprintf("%v (%.1f)", getSeverityJa(v.CVSSSeverity.String), v.CVSSScore.Float64),
+			Severity:    severity,
 			DatePublic:  v.GetDatePublic().Format("2006年1月2日"),
 			DatePublish: v.GetDatePublish().Format("2006年1月2日"),
 			DateUpdate:  v.GetDateUpdate().Format("2006年1月2日"),

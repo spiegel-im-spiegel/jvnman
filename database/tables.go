@@ -25,7 +25,28 @@ var (
 		"vulnview.date_public as date_public",
 		"vulnview.date_publish as date_publish",
 		"vulnview.date_update as date_update ",
-	).From("vulnview")
+	).From("vulnview").OrderBy("date_update desc", "id")
+	selectAffected = squirrel.Select(
+		"id",
+		"name",
+		"product_name",
+		"version_number",
+	).From("affected").OrderBy("name", "product_name", "version_number")
+	selectCVSS = squirrel.Select(
+		"id",
+		"version",
+		"base_vector",
+		"base_score",
+		"severity",
+	).From("cvss").Where(squirrel.Eq{"version": "3.0"})
+	selectRelated = squirrel.Select(
+		"id",
+		"type",
+		"name",
+		"vulinfo_id",
+		"title",
+		"url",
+	).From("related").OrderBy("type", "vulinfo_id", "name", "title", "url")
 )
 
 //Vulnlist is definition of vulnlist table

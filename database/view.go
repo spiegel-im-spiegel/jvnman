@@ -7,19 +7,6 @@ import (
 	"gopkg.in/Masterminds/squirrel.v1"
 )
 
-//GetVulnview returns Vulnview instance
-func (db *DB) GetVulnview(id string) *Vulnview {
-	ds := Vulnview{}
-	if psql, args, err := selectVulnview.Where(squirrel.Eq{"id": id}).ToSql(); err != nil {
-		db.GetLogger().Println(err)
-		return nil
-	} else if err := db.GetDB().SelectOne(&ds, psql, args...); err != nil {
-		db.GetLogger().Println(err)
-		return nil
-	}
-	return &ds
-}
-
 //GetVulnviewList returns []Vulnview instance
 func (db *DB) GetVulnviewList(days int, score float64, product, cve string) ([]Vulnview, error) {
 	ds := []Vulnview{}
@@ -54,12 +41,63 @@ func (db *DB) GetVulnviewList(days int, score float64, product, cve string) ([]V
 	}
 
 	//query
-	if psql, args, err := bldr.OrderBy("date_update desc", "id").ToSql(); err != nil {
+	if psql, args, err := bldr.ToSql(); err != nil {
 		return ds, err
 	} else if _, err = db.GetDB().Select(&ds, psql, args...); err != nil {
 		return ds, err
 	}
 	return ds, nil
+}
+
+//GetVulnview returns Vulnlist instance
+func (db *DB) GetVulnInfo(id string) *Vulnlist {
+	obj, err := db.GetDB().Get(Vulnlist{}, id)
+	if err != nil {
+		return nil
+	}
+	if obj == nil {
+		return nil
+	}
+	return obj.(*Vulnlist)
+}
+
+//GetAffected returns []Affected instance
+func (db *DB) GetAffected(id string) []Affected {
+	ds := []Affected{}
+	if psql, args, err := selectAffected.Where(squirrel.Eq{"id": id}).ToSql(); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	} else if _, err := db.GetDB().Select(&ds, psql, args...); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	}
+	return ds
+}
+
+//GetCVSS returns CVSS instance
+func (db *DB) GetCVSS(id string) *CVSS {
+	ds := CVSS{}
+	if psql, args, err := selectCVSS.Where(squirrel.Eq{"id": id}).ToSql(); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	} else if err := db.GetDB().SelectOne(&ds, psql, args...); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	}
+	return &ds
+}
+
+//GetRelated returns []Affected instance
+func (db *DB) GetRelated(id string) []Related {
+	ds := []Related{}
+	if psql, args, err := selectRelated.Where(squirrel.Eq{"id": id}).ToSql(); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	} else if _, err := db.GetDB().Select(&ds, psql, args...); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	}
+	return ds
 }
 
 /* Copyright 2018 Spiegel

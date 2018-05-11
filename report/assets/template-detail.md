@@ -1,6 +1,6 @@
-# [{{ .Info.ID }}: {{ .Info.Title }}]({{ .Info.URI }})
+# {{ .Info.Title }}
 
-## 概要
+脆弱性対策情報ID: [{{ .Info.ID }}]({{ .Info.URI }})
 
 {{ .Info.Description }}
 
@@ -10,15 +10,21 @@
 
 ### 影響を受ける製品
 
+{{ range .Affects }}- {{ .Name }} / {{ .ProductName }} {{ .VersionNumber }}
+{{ end }}
+
 ### 深刻度
 
-{{ .Info.Severity }}
+{{ with .CVSS }}{{ if .Severity }}{{ .Severity }}: {{ .BaseVector }}（{{ .BaseScore }}）{{ else }}CVSSv3 評価なし{{ end }}{{ end }}
 
 ## 対策
 
 {{ .Info.Solution }}
 
 ## 関連情報
+
+{{ range .Relattions }}- {{ if .Name }}{{ .Name }} {{ end }}[{{ .VulinfoID }}]({{ .URL }}) {{ if .Title }}{{ .Title }}{{ end }}
+{{ end }}
 
 ## 更新情報
 

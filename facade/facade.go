@@ -41,7 +41,7 @@ func newRootCmd(ui *rwi.RWI, args []string) *cobra.Command {
 	rootCmd.SetOutput(ui.ErrorWriter())
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default $HOME/.jvnman.yaml)")
-	rootCmd.PersistentFlags().StringP("dbfile", "d", dbpath, "database file path")
+	rootCmd.PersistentFlags().StringP("dbfile", "", dbpath, "database file path")
 	rootCmd.PersistentFlags().StringP("logfile", "", "", "logfile path (default standard error)")
 	rootCmd.PersistentFlags().StringP("loglevel", "", "error", "log level: trace/debug/info/warn/error/fatal")
 	viper.BindPFlag("dbfile", rootCmd.PersistentFlags().Lookup("dbfile"))

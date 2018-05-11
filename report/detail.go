@@ -2,23 +2,52 @@ package report
 
 import (
 	"bytes"
-	"fmt"
 	"io"
+	"os"
 	"strings"
 	"text/template"
 
 	"github.com/spiegel-im-spiegel/jvnman/database"
-	"gopkg.in/russross/blackfriday.v2"
 )
 
-type VulnDetail struct {
-	Info VulnInfo
+//AffectInfo is dataset for report
+type AffectInfo struct {
+	ID            string
+	Name          string
+	ProductName   string
+	VersionNumber string
 }
 
-func Detail(db *database.DB, id string, f Format) (io.Reader, error) {
+//CVSSInfo is dataset for report
+type CVSSInfo struct {
+	ID         string
+	Version    string
+	BaseVector string
+	BaseScore  float64
+	Severity   string
+}
+
+//RelatedInfo is dataset for report
+type RelatedInfo struct {
+	ID        string
+	Type      string
+	Name      string
+	VulinfoID string
+	Title     string
+	URL       string
+}
+
+type VulnDetail struct {
+	Info       VulnInfo
+	Affects    []AffectInfo
+	CVSS       CVSSInfo
+	Relattions []RelatedInfo
+}
+
+func Detail(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
 	buf := &bytes.Buffer{}
 	detail := VulnDetail{}
-	v := db.GetVulnview(id)
+	v := db.GetVulnInfo(id)
 	if v == nil {
 		return buf, nil
 	}
@@ -28,14 +57,62 @@ func Detail(db *database.DB, id string, f Format) (io.Reader, error) {
 	detail.Info.URI = v.URI.String
 	detail.Info.Impact = v.Impact.String
 	detail.Info.Solution = v.Solution.String
-	detail.Info.Severity = fmt.Sprintf("%v (%.1f)", getSeverityJa(v.CVSSSeverity.String), v.CVSSScore.Float64)
 	detail.Info.DatePublic = v.GetDatePublic().Format("2006年1月2日")
 	detail.Info.DatePublish = v.GetDatePublish().Format("2006年1月2日")
 	detail.Info.DateUpdate = v.GetDateUpdate().Format("2006年1月2日")
 
-	tf, err := Assets.Open("/template-detail.md")
-	if err != nil {
-		return buf, err
+	af := []AffectInfo{}
+	dsA := db.GetAffected(id)
+	if dsA != nil {
+		for _, a := range dsA {
+			aa := AffectInfo{
+				ID:            a.ID.String,
+				Name:          a.Name.String,
+				ProductName:   a.ProductName.String,
+				VersionNumber: a.VersionNumber.String,
+			}
+			af = append(af, aa)
+		}
+	}
+	detail.Affects = af
+	c := db.GetCVSS(id)
+	if c != nil {
+		detail.CVSS.ID = c.ID.String
+		detail.CVSS.Version = c.Version.String
+		detail.CVSS.BaseVector = c.BaseVector.String
+		detail.CVSS.BaseScore = c.BaseScore.Float64
+		detail.CVSS.Severity = getSeverityJa(c.Severity.String)
+	}
+	rf := []RelatedInfo{}
+	dsR := db.GetRelated(id)
+	if dsA != nil {
+		for _, r := range dsR {
+			rr := RelatedInfo{
+				ID:        r.ID.String,
+				Type:      r.Type.String,
+				Name:      r.Name.String,
+				VulinfoID: r.VulinfoID.String,
+				Title:     r.Title.String,
+				URL:       r.URL.String,
+			}
+			rf = append(rf, rr)
+		}
+	}
+	detail.Relattions = rf
+
+	var tf io.Reader
+	if len(tfname) > 0 {
+		file, err := os.Open(tfname)
+		if err != nil {
+			return buf, err
+		}
+		tf = file
+	} else {
+		file, err := Assets.Open("/template-detail.md")
+		if err != nil {
+			return buf, err
+		}
+		tf = file
 	}
 	tmpdata := &strings.Builder{}
 	io.Copy(tmpdata, tf)
@@ -50,25 +127,6 @@ func Detail(db *database.DB, id string, f Format) (io.Reader, error) {
 		return convHTML(buf), nil
 	}
 	return buf, nil
-}
-
-func convHTML(md *bytes.Buffer) io.Reader {
-	//HTMLFlags and Renderer
-	htmlFlags := blackfriday.CommonHTMLFlags         //UseXHTML | Smartypants | SmartypantsFractions | SmartypantsDashes | SmartypantsLatexDashes
-	htmlFlags |= blackfriday.FootnoteReturnLinks     //Generate a link at the end of a footnote to return to the source
-	htmlFlags |= blackfriday.SmartypantsAngledQuotes //Enable angled double quotes (with Smartypants) for double quotes rendering
-	htmlFlags |= blackfriday.SmartypantsQuotesNBSP   //Enable French guillemets 損 (with Smartypants)
-	renderer := blackfriday.NewHTMLRenderer(blackfriday.HTMLRendererParameters{Flags: htmlFlags, Title: "", CSS: ""})
-
-	//Extensions
-	extFlags := blackfriday.CommonExtensions //NoIntraEmphasis | Tables | FencedCode | Autolink | Strikethrough | SpaceHeadings | HeadingIDs | BackslashLineBreak | DefinitionLists
-	extFlags |= blackfriday.Footnotes        //Pandoc-style footnotes
-	extFlags |= blackfriday.HeadingIDs       //specify heading IDs  with {#id}
-	extFlags |= blackfriday.Titleblock       //Titleblock ala pandoc
-	extFlags |= blackfriday.DefinitionLists  //Render definition lists
-
-	html := blackfriday.Run(md.Bytes(), blackfriday.WithExtensions(extFlags), blackfriday.WithRenderer(renderer))
-	return bytes.NewReader(html)
 }
 
 /* Copyright 2018 Spiegel
