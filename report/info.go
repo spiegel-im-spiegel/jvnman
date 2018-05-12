@@ -2,6 +2,7 @@ package report
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -10,46 +11,17 @@ import (
 	"github.com/spiegel-im-spiegel/jvnman/database"
 )
 
-//AffectInfo is dataset for report
-type AffectInfo struct {
-	ID            string
-	Name          string
-	ProductName   string
-	VersionNumber string
-}
-
-//CVSSInfo is dataset for report
-type CVSSInfo struct {
-	ID         string
-	Version    string
-	BaseVector string
-	BaseScore  float64
-	Severity   string
-}
-
-//RelatedInfo is dataset for report
-type RelatedInfo struct {
-	ID        string
-	Type      string
-	Name      string
-	VulinfoID string
-	Title     string
-	URL       string
-}
-
-type VulnDetail struct {
-	Info       VulnInfo
-	Affects    []AffectInfo
-	CVSS       CVSSInfo
-	Relattions []RelatedInfo
-}
-
-func Detail(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
+//Info returns io.Reader for detail info
+func Info(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
 	buf := &bytes.Buffer{}
 	detail := VulnDetail{}
-	v := db.GetVulnInfo(id)
+	v := getGetVulnviewByID(db, id)
 	if v == nil {
 		return buf, nil
+	}
+	severity := ""
+	if len(v.CVSSSeverity.String) > 0 {
+		severity = fmt.Sprintf("%v (%.1f)", getSeverityJa(v.CVSSSeverity.String), v.CVSSScore.Float64)
 	}
 	detail.Info.ID = v.ID.String
 	detail.Info.Title = v.Title.String
@@ -57,6 +29,8 @@ func Detail(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
 	detail.Info.URI = v.URI.String
 	detail.Info.Impact = v.Impact.String
 	detail.Info.Solution = v.Solution.String
+	detail.Info.CVSSVector = v.CVSSVector.String
+	detail.Info.Severity = severity
 	detail.Info.DatePublic = v.GetDatePublic().Format("2006年1月2日")
 	detail.Info.DatePublish = v.GetDatePublish().Format("2006年1月2日")
 	detail.Info.DateUpdate = v.GetDateUpdate().Format("2006年1月2日")
@@ -127,6 +101,20 @@ func Detail(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
 		return convHTML(buf), nil
 	}
 	return buf, nil
+}
+
+func getGetVulnviewByID(db *database.DB, id string) *database.Vulnview {
+	v := db.GetVulnview(id)
+	if v != nil {
+		return v
+	}
+
+	if err := db.UpdateID(id); err != nil {
+		db.GetLogger().Errorln(err)
+		return nil
+	}
+
+	return db.GetVulnview(id)
 }
 
 /* Copyright 2018 Spiegel

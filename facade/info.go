@@ -10,10 +10,10 @@ import (
 	"github.com/spiegel-im-spiegel/jvnman/report"
 )
 
-//newDetailCmd returns cobra.Command instance for show sub-command
-func newDetailCmd(ui *rwi.RWI) *cobra.Command {
-	detailCmd := &cobra.Command{
-		Use:   "detail [flags] <JVN Database ID>",
+//newInfoCmd returns cobra.Command instance for show sub-command
+func newInfoCmd(ui *rwi.RWI) *cobra.Command {
+	infoCmd := &cobra.Command{
+		Use:   "info [flags] <JVN Vulnerability ID>",
 		Short: "Output vulnerability information",
 		Long:  "Output vulnerability information",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -38,13 +38,16 @@ func newDetailCmd(ui *rwi.RWI) *cobra.Command {
 			if form != report.FormHTML && form != report.FormMarkdown {
 				return errors.New("not support format: " + f)
 			}
-			db.GetLogger().Println("form:", form.String())
+			db.GetLogger().Println("form option:", form.String())
 			tf, err := cmd.Flags().GetString("template")
 			if err != nil {
 				return errors.Wrap(err, "--template")
 			}
+			if len(tf) > 0 {
+				db.GetLogger().Println("template option:", tf)
+			}
 
-			r, err := report.Detail(db, id, tf, form)
+			r, err := report.Info(db, id, tf, form)
 			if err != nil {
 				db.GetLogger().Fatalln(err)
 				return err
@@ -54,10 +57,10 @@ func newDetailCmd(ui *rwi.RWI) *cobra.Command {
 			return nil
 		},
 	}
-	detailCmd.Flags().StringP("form", "f", "markdown", "output format: html/markdown")
-	detailCmd.Flags().StringP("template", "t", "", "template file path")
+	infoCmd.Flags().StringP("form", "f", "markdown", "output format: html/markdown")
+	infoCmd.Flags().StringP("template", "t", "", "template file path")
 
-	return detailCmd
+	return infoCmd
 }
 
 /* Copyright 2018 Spiegel

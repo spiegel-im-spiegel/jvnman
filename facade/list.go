@@ -23,22 +23,23 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "--range")
 			}
-			db.GetLogger().Println("range:", days, "days")
+			db.GetLogger().Println("range option:", days, "days")
 			score, err := cmd.Flags().GetFloat64("score")
 			if err != nil {
 				return errors.Wrap(err, "--score")
 			}
-			db.GetLogger().Println("CVSS score:", score)
+			db.GetLogger().Println("CVSS score option:", score)
 			p, err := cmd.Flags().GetString("product")
 			if err != nil {
 				return errors.Wrap(err, "--product")
 			}
-			db.GetLogger().Println("product:", p)
+			db.GetLogger().Println("product option:", p)
 			c, err := cmd.Flags().GetString("cve")
 			if err != nil {
 				return errors.Wrap(err, "--cve")
 			}
-			db.GetLogger().Println("cve:", c)
+			db.GetLogger().Println("cve option:", c)
+
 			f, err := cmd.Flags().GetString("form")
 			if err != nil {
 				return errors.Wrap(err, "--form")
@@ -47,14 +48,16 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 			if form == report.FormUnknown {
 				return errors.New("not support format: " + f)
 			}
-			db.GetLogger().Println("form:", form.String())
-			v, err := cmd.Flags().GetBool("verbose")
+			db.GetLogger().Println("form option:", form.String())
+			tf, err := cmd.Flags().GetString("template")
 			if err != nil {
-				return errors.Wrap(err, "--verbose")
+				return errors.Wrap(err, "--template")
 			}
-			db.GetLogger().Println("verbose:", v)
+			if len(tf) > 0 {
+				db.GetLogger().Println("template option:", tf)
+			}
 
-			r, err := report.ListData(db, days, score, p, c, form, v)
+			r, err := report.ListData(db, days, score, p, c, form, tf)
 			if err != nil {
 				db.GetLogger().Fatalln(err)
 				return err
@@ -65,11 +68,11 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 		},
 	}
 	listCmd.Flags().IntP("range", "r", 3, "list the data for the past days")
-	listCmd.Flags().Float64P("score", "s", 0.0, "minimum score of CVSS")
-	listCmd.Flags().BoolP("verbose", "v", false, "verbose mode")
+	listCmd.Flags().Float64P("score", "s", 0.0, "minimum score of CVSS for filtering")
 	listCmd.Flags().StringP("form", "f", "markdown", "output format: html/markdown/csv")
-	listCmd.Flags().StringP("product", "p", "", "product name")
-	listCmd.Flags().StringP("cve", "c", "", "CVE-ID (see https://cve.mitre.org/)")
+	listCmd.Flags().StringP("product", "p", "", "product name for filtering")
+	listCmd.Flags().StringP("cve", "c", "", "CVE-ID (see https://cve.mitre.org/) for filtering")
+	listCmd.Flags().StringP("template", "t", "", "template file path")
 
 	return listCmd
 }

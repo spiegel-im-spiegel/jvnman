@@ -49,16 +49,17 @@ func (db *DB) GetVulnviewList(days int, score float64, product, cve string) ([]V
 	return ds, nil
 }
 
-//GetVulnview returns Vulnlist instance
-func (db *DB) GetVulnInfo(id string) *Vulnlist {
-	obj, err := db.GetDB().Get(Vulnlist{}, id)
-	if err != nil {
+//GetVulnview returns Vulnview instance
+func (db *DB) GetVulnview(id string) *Vulnview {
+	ds := Vulnview{}
+	if psql, args, err := selectVulnview.Where(squirrel.Eq{"id": id}).ToSql(); err != nil {
+		db.GetLogger().Println(err)
+		return nil
+	} else if err := db.GetDB().SelectOne(&ds, psql, args...); err != nil {
+		db.GetLogger().Println(err)
 		return nil
 	}
-	if obj == nil {
-		return nil
-	}
-	return obj.(*Vulnlist)
+	return &ds
 }
 
 //GetAffected returns []Affected instance

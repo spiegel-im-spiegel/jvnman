@@ -22,14 +22,16 @@ func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "--month")
 			}
-			db.GetLogger().Println("month:", m)
-
-			ids, err := db.Update(m)
+			db.GetLogger().Println("month option:", m)
+			k, err := cmd.Flags().GetString("keyword")
 			if err != nil {
-				db.GetLogger().Fatalln(err)
-				return err
+				return errors.Wrap(err, "--keyword")
 			}
-			if err := db.UpdateDetail(ids); err != nil {
+			if len(k) > 0 {
+				db.GetLogger().Println("keyword option:", k)
+			}
+
+			if err := db.Update(m, k); err != nil {
 				db.GetLogger().Fatalln(err)
 				return err
 			}
@@ -37,6 +39,7 @@ func newUpdateCmd(ui *rwi.RWI) *cobra.Command {
 		},
 	}
 	updateCmd.Flags().BoolP("month", "m", false, "get the data for the past month")
+	updateCmd.Flags().StringP("keyword", "k", "", "keyword for filtering")
 
 	return updateCmd
 }

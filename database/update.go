@@ -5,47 +5,76 @@ import (
 	"time"
 
 	"github.com/spiegel-im-spiegel/go-myjvn/rss"
-	"github.com/spiegel-im-spiegel/go-myjvn/rss/option"
-	"github.com/spiegel-im-spiegel/go-myjvn/status"
-	"github.com/spiegel-im-spiegel/go-myjvn/vuldef"
 	"gopkg.in/Masterminds/squirrel.v1"
+	gorp "gopkg.in/gorp.v2"
 )
 
-//Update returns result for updating JVN data
-func (db *DB) Update(month bool) ([]string, error) {
-	ids := []string{}
+//Update update JVN vulnerability data
+func (db *DB) Update(month bool, keyword string) error {
 	if db == nil {
-		return ids, nil
+		return nil
 	}
-	logger := db.GetLogger()
-	logger.Println("Update JVN data:", db.GetDBFile())
+	db.GetLogger().Debugln("month option:", month)
 
-	jvnrss, err := db.getJVNRSS(db.getLastUpdate(), month)
+	jvnrss, err := db.GetJVNRSS(db.GetLastUpdate(), month, keyword)
 	if err != nil {
-		return ids, err
+		return err
 	}
 
 	tx, err := db.GetDB().Begin()
 	if err != nil {
-		return ids, err
+		return err
 	}
 
-	//insert and update data
-	err = nil
+	if err := db.update(tx, jvnrss); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit()
+}
+
+//UpdateID update JVN vulnerability data by ID
+func (db *DB) UpdateID(id string) error {
+	if db == nil {
+		return nil
+	}
+	db.GetLogger().Debugln("update id:", id)
+
+	jvnrss, err := db.GetJVNRSSByKeyword(id)
+	if err != nil {
+		return err
+	}
+
+	tx, err := db.GetDB().Begin()
+	if err != nil {
+		return err
+	}
+
+	if err := db.update(tx, jvnrss); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit()
+}
+
+//Update returns result for updating JVN data
+func (db *DB) update(tx *gorp.Transaction, jvnrss *rss.JVNRSS) error {
+	ids := []string{}
 	for _, itm := range jvnrss.Items {
-		obj, errGet := tx.Get(Vulnlist{}, itm.Identifier)
-		if errGet != nil {
-			err = errGet
-			break
+		obj, err := tx.Get(Vulnlist{}, itm.Identifier)
+		if err != nil {
+			return err
 		}
 		if obj == nil {
-			ids = append(ids, itm.Identifier)
-			if err = tx.Insert(NewVulnlist(itm.Identifier, html.UnescapeString(itm.Title), html.UnescapeString(itm.Description), html.UnescapeString(itm.Link), html.UnescapeString(itm.Creator), "", "", itm.Date.Unix(), itm.Issued.Unix(), itm.Modified.Unix())); err != nil {
-				break
+			db.GetLogger().Debugln("Insert", itm.Identifier)
+			if err := tx.Insert(NewVulnlist(itm.Identifier, html.UnescapeString(itm.Title), html.UnescapeString(itm.Description), html.UnescapeString(itm.Link), html.UnescapeString(itm.Creator), "", "", itm.Date.Unix(), itm.Issued.Unix(), itm.Modified.Unix())); err != nil {
+				return err
 			}
+			ids = append(ids, itm.Identifier)
 		} else {
 			ds := obj.(*Vulnlist)
 			if itm.Modified.After(ds.GetDateUpdate()) {
+				db.GetLogger().Debugln("Update", itm.Identifier)
 				ds.Title = Text(html.UnescapeString(itm.Title))
 				ds.Description = Text(html.UnescapeString(itm.Description))
 				ds.URI = Text(html.UnescapeString(itm.Link))
@@ -53,139 +82,97 @@ func (db *DB) Update(month bool) ([]string, error) {
 				ds.DatePublic = Integer(itm.Date.Unix())
 				ds.DatePublish = Integer(itm.Issued.Unix())
 				ds.DateUpdate = Integer(itm.Modified.Unix())
-				if _, err = tx.Update(ds); err != nil {
-					break
+				if _, err := tx.Update(ds); err != nil {
+					return err
 				}
+				ids = append(ids, itm.Identifier)
 			}
 		}
 	}
-
-	if err != nil {
-		tx.Rollback()
-		return ids, err
-	}
-	return ids, tx.Commit()
+	return db.updateDetail(tx, ids)
 }
 
-//UpdateDetail returns result for updating JVN detail data
-func (db *DB) UpdateDetail(ids []string) error {
-	if db == nil {
-		return nil
-	}
-	logger := db.GetLogger()
-	logger.Println("Update JVN data detail:", db.GetDBFile())
+func (db *DB) updateDetail(tx *gorp.Transaction, ids []string) error {
 	if len(ids) == 0 {
 		return nil
 	}
+	db.GetLogger().Debugln("JVN Vulnerability ID:", ids)
 
-	vulnInfo, err := db.getVULDEF(ids)
-	if err != nil {
-		return err
-	}
-
-	tx, err := db.GetDB().Begin()
+	vulnInfo, err := db.GetVULDEF(ids)
 	if err != nil {
 		return err
 	}
 
 	//update detail data
-	err = nil
 	for _, vuln := range vulnInfo.Vulinfo {
 		//update vulnlist
-		obj, errGet := tx.Get(Vulnlist{}, vuln.VulinfoID)
-		if errGet != nil {
-			err = errGet
-			break
-		}
-		if obj != nil {
+		if obj, err := tx.Get(Vulnlist{}, vuln.VulinfoID); err != nil {
+			return err
+		} else if obj != nil {
 			ds := obj.(*Vulnlist)
 			ds.Impact = Text(html.UnescapeString(vuln.VulinfoData.Impact.Description))
 			ds.Solution = Text(html.UnescapeString(vuln.VulinfoData.Solution.Description))
 			ds.DatePublic = Integer(vuln.VulinfoData.DatePublic.Unix())
 			ds.DatePublish = Integer(vuln.VulinfoData.DateFirstPublished.Unix())
-			if _, err = tx.Update(ds); err != nil {
-				break
+			if _, err := tx.Update(ds); err != nil {
+				return err
 			}
 		}
 
 		//Affected info.
-		if psql, args, errQry := deleteAffected.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
-			err = errQry
-			break
+		if psql, args, err := deleteAffected.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			return err
 		} else if _, err = tx.Exec(psql, args...); err != nil {
-			break
+			return err
 		}
 		for _, affected := range vuln.VulinfoData.Affected {
 			for _, ver := range affected.VersionNumber {
-				if err = tx.Insert(NewAffected(vuln.VulinfoID, html.UnescapeString(affected.Name), html.UnescapeString(affected.ProductName), html.UnescapeString(ver))); err != nil {
-					break
+				if err := tx.Insert(NewAffected(vuln.VulinfoID, html.UnescapeString(affected.Name), html.UnescapeString(affected.ProductName), html.UnescapeString(ver))); err != nil {
+					return err
 				}
 			}
-			if err != nil {
-				break
-			}
-		}
-		if err != nil {
-			break
 		}
 
 		//Impact info
-		if psql, args, errQry := deleteCVSS.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
-			err = errQry
-			break
+		if psql, args, err := deleteCVSS.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			return err
 		} else if _, err = tx.Exec(psql, args...); err != nil {
-			break
+			return err
 		}
 		for _, cvss := range vuln.VulinfoData.Impact.CVSS {
-			if err = tx.Insert(NewCVSS(vuln.VulinfoID, cvss.Version, cvss.BaseVector, cvss.Severity, getFloatFromString(cvss.BaseScore))); err != nil {
-				break
+			if err := tx.Insert(NewCVSS(vuln.VulinfoID, cvss.Version, cvss.BaseVector, cvss.Severity, getFloatFromString(cvss.BaseScore))); err != nil {
+				return err
 			}
 		}
-		if err != nil {
-			break
-		}
-
 		//Related info.
-		if psql, args, errQry := deleteRelated.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
-			err = errQry
-			break
+		if psql, args, err := deleteRelated.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			return err
 		} else if _, err = tx.Exec(psql, args...); err != nil {
-			break
+			return err
 		}
 		for _, related := range vuln.VulinfoData.Related {
-			if err = tx.Insert(NewRelated(vuln.VulinfoID, related.Type, html.UnescapeString(related.Name), html.UnescapeString(related.VulinfoID), html.UnescapeString(related.Title), html.UnescapeString(related.URL))); err != nil {
-				break
+			if err := tx.Insert(NewRelated(vuln.VulinfoID, related.Type, html.UnescapeString(related.Name), html.UnescapeString(related.VulinfoID), html.UnescapeString(related.Title), html.UnescapeString(related.URL))); err != nil {
+				return err
 			}
-		}
-		if err != nil {
-			break
 		}
 
 		//History info.
-		if psql, args, errQry := deleteHistory.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
-			err = errQry
-			break
+		if psql, args, err := deleteHistory.Where(squirrel.Eq{"id": vuln.VulinfoID}).ToSql(); err != nil {
+			return err
 		} else if _, err = tx.Exec(psql, args...); err != nil {
-			break
+			return err
 		}
 		for _, history := range vuln.VulinfoData.History {
-			if err = tx.Insert(NewHistory(vuln.VulinfoID, int64(history.HistoryNo), html.UnescapeString(history.Description), history.DateTime.Unix())); err != nil {
-				break
+			if err := tx.Insert(NewHistory(vuln.VulinfoID, int64(history.HistoryNo), html.UnescapeString(history.Description), history.DateTime.Unix())); err != nil {
+				return err
 			}
 		}
-		if err != nil {
-			break
-		}
 	}
-
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	return tx.Commit()
+	return nil
 }
 
-func (db *DB) getLastUpdate() time.Time {
+//GetLastUpdate returns  last update time.Time
+func (db *DB) GetLastUpdate() time.Time {
 	var ds struct {
 		Last int64 `db:"last"`
 	}
@@ -193,100 +180,16 @@ func (db *DB) getLastUpdate() time.Time {
 		db.GetLogger().Errorln(err)
 		return time.Time{}
 	} else if err := db.GetDB().SelectOne(&ds, psql); err != nil {
-		db.GetLogger().Println(err)
+		db.GetLogger().Errorln(err)
 		return time.Time{}
 	}
 	dt := getTimeFromUnixtime(ds.Last)
 	if dt.IsZero() {
-		db.GetLogger().Println("no data")
+		db.GetLogger().Println("no data in database")
 	} else {
 		db.GetLogger().Println("last update:", dt)
 	}
 	return dt
-}
-
-func (db *DB) getJVNRSS(start time.Time, month bool) (*rss.JVNRSS, error) {
-	startItem := 1
-	maxItem := 0
-	var opt *option.Option
-	if month {
-		opt = option.New(
-			option.WithStartItem(startItem),
-			option.WithRangeDatePublicMode(option.NoRange),
-			option.WithRangeDateFirstPublishedMode(option.NoRange),
-			option.WithRangeDatePublishedMode(option.RangeMonth),
-		)
-	} else if !start.IsZero() {
-		opt = option.New(
-			option.WithStartItem(startItem),
-			option.WithRangeDatePublicMode(option.NoRange),
-			option.WithRangeDateFirstPublishedMode(option.NoRange),
-			option.WithRangeDatePublishedPeriod(start, time.Now()),
-		)
-	} else {
-		opt = option.New(
-			option.WithStartItem(startItem),
-			option.WithRangeDatePublicMode(option.NoRange),
-			option.WithRangeDateFirstPublishedMode(option.NoRange),
-		)
-	}
-	jvnrss := (*rss.JVNRSS)(nil)
-	for {
-		if startItem == 1 {
-			xml, err := db.GetAPI().VulnOverviewListXML(opt)
-			if err != nil {
-				return jvnrss, err
-			}
-			stat, err := status.Unmarshal(xml)
-			if err != nil {
-				return jvnrss, err
-			}
-			if err2 := stat.GetError(); err2 != nil {
-				return jvnrss, err2
-			}
-			maxItem = stat.Status.TotalRes
-			r, err := rss.Unmarshal(xml)
-			if err != nil {
-				return jvnrss, err
-			}
-			startItem += len(r.Items)
-			jvnrss = r
-		} else {
-			opt.SetStart(startItem)
-			r, err := db.GetAPI().VulnOverviewList(opt)
-			if err != nil {
-				return jvnrss, err
-			}
-			startItem += len(r.Items)
-			jvnrss.Append(r)
-		}
-		if maxItem < startItem {
-			break
-		}
-	}
-	return jvnrss, nil
-}
-
-func (db *DB) getVULDEF(idlist []string) (*vuldef.VULDEF, error) {
-	vulnInfo := (*vuldef.VULDEF)(nil)
-	for i := 0; i < len(idlist); i += vuldef.MaxItems {
-		var ids []string
-		if i+vuldef.MaxItems < len(idlist) {
-			ids = idlist[i : i+vuldef.MaxItems]
-		} else {
-			ids = idlist[i:]
-		}
-		vuln, err := db.GetAPI().VulnDetailInfo(ids)
-		if err != nil {
-			return vulnInfo, err
-		}
-		if vulnInfo == nil {
-			vulnInfo = vuln
-		} else {
-			vulnInfo.Append(vuln)
-		}
-	}
-	return vulnInfo, nil
 }
 
 /* Copyright 2018 Spiegel

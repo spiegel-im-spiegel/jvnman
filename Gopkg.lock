@@ -67,10 +67,10 @@
   version = "v1.7.6"
 
 [[projects]]
+  branch = "master"
   name = "github.com/mattn/go-sqlite3"
   packages = ["."]
-  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
-  version = "v1.6.0"
+  revision = "a72efd674f654961a11ac41aae72c0e43963fe6c"
 
 [[projects]]
   branch = "master"
@@ -82,7 +82,7 @@
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+  revision = "bb74f1db0675b241733089d5a1faa5dd8b0ef57b"
 
 [[projects]]
   name = "github.com/pelletier/go-toml"
@@ -95,12 +95,6 @@
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
-
-[[projects]]
-  name = "github.com/russross/blackfriday"
-  packages = ["."]
-  revision = "cadec560ec52d93835bf2f15bd794700d3a2473b"
-  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -158,8 +152,8 @@
     "values",
     "vuldef"
   ]
-  revision = "75ca7d4e4d4fa82500c9c9e9ec4685e8a4118121"
-  version = "v0.2.2"
+  revision = "1107c8ed63eb8caa0b3188ceb59bf985b9a1bca6"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/spiegel-im-spiegel/gocli"
@@ -180,7 +174,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "64746a42f36bf0832f86b76004f1699dbeb33e4f"
+  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -208,6 +202,12 @@
   version = "2.1"
 
 [[projects]]
+  name = "gopkg.in/russross/blackfriday.v2"
+  packages = ["."]
+  revision = "cadec560ec52d93835bf2f15bd794700d3a2473b"
+  version = "v2.0.0"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -216,6 +216,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b3618aa23fbe189ece048ed1775ffc280566022d027e03f4f644e5db15a691c9"
+  inputs-digest = "22350ffa6bcb2ed7c72587828b27782fdbbdecb4a97f66e73ff04ca97eb81023"
   solver-name = "gps-cdcl"
   solver-version = 1

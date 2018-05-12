@@ -112,7 +112,7 @@
 		</tr>
 		<tr>
 			<td style="text-align:right;">7</td>
-			<td>CVSS 評価値</td>
+			<td>CVSS基本評価値</td>
 			<td>cvss_score</td>
 			<td>NUMERIC</td>
 			<td>&nbsp;</td>
@@ -120,8 +120,17 @@
 			<td>CVSSv3</td>
 		</tr>
 		<tr>
+			<td style="text-align:right;">7</td>
+			<td>CVSS基本評価の短縮表記</td>
+			<td>cvss_vector</td>
+			<td>TEXT</td>
+			<td>&nbsp;</td>
+			<td></td>
+			<td>CVSSv3</td>
+		</tr>
+		<tr>
 			<td style="text-align:right;">8</td>
-			<td>CVSS 深刻度</td>
+			<td>CVSS深刻度</td>
 			<td>cvss_severity</td>
 			<td>TEXT</td>
 			<td>&nbsp;</td>
@@ -170,7 +179,7 @@
 		<tr>
 			<td>
 				<pre>
-CREATE&#32;VIEW&#32;vulnview&#32;as&#32;<br>select<br>&#32;&#32;list.id&#32;as&#32;id<br>&#32;&#32;,&#32;list.title&#32;as&#32;title<br>&#32;&#32;,&#32;list.description&#32;as&#32;description<br>&#32;&#32;,&#32;list.uri&#32;as&#32;uri<br>&#32;&#32;,&#32;list.impact&#32;as&#32;impact<br>&#32;&#32;,&#32;list.solution&#32;as&#32;solution<br>&#32;&#32;,&#32;cvss.base_score&#32;as&#32;cvss_score<br>&#32;&#32;,&#32;cvss.severity&#32;as&#32;cvss_severity<br>&#32;&#32;,&#32;list.date_public&#32;as&#32;date_public<br>&#32;&#32;,&#32;list.date_publish&#32;as&#32;date_publish<br>&#32;&#32;,&#32;list.date_update&#32;as&#32;date_update&#32;<br>from<br>&#32;&#32;vulnlist&#32;list&#32;<br>&#32;&#32;left&#32;outer&#32;join&#32;cvss&#32;<br>&#32;&#32;&#32;&#32;on&#32;list.id&#32;=&#32;cvss.id&#32;<br>&#32;&#32;&#32;&#32;and&#32;cvss.version&#32;=&#32;'3.0'<br>
+CREATE&#32;VIEW&#32;vulnview&#32;as&#32;<br>select<br>&#32;&#32;list.id&#32;as&#32;id<br>&#32;&#32;,&#32;list.title&#32;as&#32;title<br>&#32;&#32;,&#32;list.description&#32;as&#32;description<br>&#32;&#32;,&#32;list.uri&#32;as&#32;uri<br>&#32;&#32;,&#32;list.impact&#32;as&#32;impact<br>&#32;&#32;,&#32;list.solution&#32;as&#32;solution<br>&#32;&#32;,&#32;cvss.base_score&#32;as&#32;cvss_score<br>&#32;&#32;,&#32;cvss.base_vector&#32;as&#32;cvss_vector<br>&#32;&#32;,&#32;cvss.severity&#32;as&#32;cvss_severity<br>&#32;&#32;,&#32;list.date_public&#32;as&#32;date_public<br>&#32;&#32;,&#32;list.date_publish&#32;as&#32;date_publish<br>&#32;&#32;,&#32;list.date_update&#32;as&#32;date_update&#32;<br>from<br>&#32;&#32;vulnlist&#32;list&#32;<br>&#32;&#32;left&#32;outer&#32;join&#32;cvss&#32;<br>&#32;&#32;&#32;&#32;on&#32;list.id&#32;=&#32;cvss.id&#32;<br>&#32;&#32;&#32;&#32;and&#32;cvss.version&#32;=&#32;'3.0'<br>
 				</pre>
 			</td>
 		</tr>

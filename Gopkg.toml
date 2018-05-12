@@ -12,7 +12,7 @@
 
 [[constraint]]
   name = "github.com/spiegel-im-spiegel/go-myjvn"
-  version = "0.2.*"
+  version = "0.3.*"
 
 [[constraint]]
   name = "github.com/spiegel-im-spiegel/logf"
@@ -28,7 +28,7 @@
 
 [[constraint]]
   name = "github.com/mattn/go-sqlite3"
-  version = "1.6.*"
+  branch = "master"
 
 [[constraint]]
   name = "gopkg.in/gorp.v2"
@@ -40,7 +40,7 @@
 
 [[constraint]]
   name = "gopkg.in/russross/blackfriday.v2"
-  version = "~2.0.*"
+  version = "2.0.*"
 
 [prune]
   go-tests = true

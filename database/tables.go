@@ -21,11 +21,12 @@ var (
 		"vulnview.impact as impact",
 		"vulnview.solution as solution",
 		"vulnview.cvss_score as cvss_score",
+		"vulnview.cvss_vector as cvss_vector",
 		"vulnview.cvss_severity as cvss_severity",
 		"vulnview.date_public as date_public",
 		"vulnview.date_publish as date_publish",
 		"vulnview.date_update as date_update ",
-	).From("vulnview").OrderBy("date_update desc", "id")
+	).From("vulnview").OrderBy("date_update desc", "date_publish desc", "date_public desc", "id")
 	selectAffected = squirrel.Select(
 		"id",
 		"name",
@@ -46,7 +47,7 @@ var (
 		"vulinfo_id",
 		"title",
 		"url",
-	).From("related").OrderBy("type", "vulinfo_id", "name", "title", "url")
+	).From("related").OrderBy("name", "vulinfo_id", "title", "url")
 )
 
 //Vulnlist is definition of vulnlist table
@@ -199,6 +200,7 @@ type Vulnview struct {
 	Impact       sql.NullString  `db:"impact"`
 	Solution     sql.NullString  `db:"solution"`
 	CVSSScore    sql.NullFloat64 `db:"cvss_score"`
+	CVSSVector   sql.NullString  `db:"cvss_vector"`
 	CVSSSeverity sql.NullString  `db:"cvss_severity"`
 	DatePublic   sql.NullInt64   `db:"date_public"`
 	DatePublish  sql.NullInt64   `db:"date_publish"`

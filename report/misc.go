@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/russross/blackfriday"
+	"gopkg.in/russross/blackfriday.v2"
 )
 
 var severityMap = map[string]string{

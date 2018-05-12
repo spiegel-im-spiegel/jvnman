@@ -7,7 +7,7 @@ var stmtsCreate = []string{
 	"create table cvss (id text not null, version text not null, base_vector text, base_score numeric, severity text, primary key (id, version));",
 	"create table related (id text not null, type text not null, name text not null, vulinfo_id text not null, title text, url text, primary key (id, type, name, vulinfo_id));",
 	"create table history (id text not null, history_no numeric not null, description text, date_time integer, primary key (id, history_no));",
-	"create view vulnview as select list.id as id, list.title as title, list.description as description, list.uri as uri, list.impact as impact, list.solution as solution, cvss.base_score as cvss_score, cvss.severity as cvss_severity, list.date_public as date_public, list.date_publish as date_publish, list.date_update as date_update from vulnlist list left outer join cvss on list.id = cvss.id and cvss.version = '3.0';",
+	"create view vulnview as select list.id as id, list.title as title, list.description as description, list.uri as uri, list.impact as impact, list.solution as solution, cvss.base_score as cvss_score, cvss.base_vector as cvss_vector, cvss.severity as cvss_severity, list.date_public as date_public, list.date_publish as date_publish, list.date_update as date_update from vulnlist list left outer join cvss on list.id = cvss.id and cvss.version = '3.0';",
 }
 
 //Initialize returns result for initializing

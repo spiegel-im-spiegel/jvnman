@@ -4,27 +4,13 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
-	html "html/template"
 	"io"
+	"os"
 	"strings"
-	text "text/template"
+	"text/template"
 
 	"github.com/spiegel-im-spiegel/jvnman/database"
 )
-
-//VulnInfo is dataset for report
-type VulnInfo struct {
-	ID          string
-	Title       string
-	Description string
-	URI         string
-	Impact      string
-	Solution    string
-	Severity    string
-	DatePublic  string
-	DatePublish string
-	DateUpdate  string
-}
 
 var csvHeader = []string{
 	"ID",
@@ -33,6 +19,7 @@ var csvHeader = []string{
 	"URI",
 	"想定される影響",
 	"対策",
+	"CVSSv3ベクタ",
 	"深刻度",
 	"発見日",
 	"公開日",
@@ -40,10 +27,11 @@ var csvHeader = []string{
 }
 
 //ListData returns io.Reader for listing
-func ListData(db *database.DB, days int, score float64, product, cve string, f Format, verbose bool) (io.Reader, error) {
+func ListData(db *database.DB, days int, score float64, product, cve string, f Format, tfname string) (io.Reader, error) {
+	buf := &bytes.Buffer{}
 	view, err := db.GetVulnviewList(days, score, product, cve)
 	if err != nil {
-		return nil, err
+		return buf, err
 	}
 	list := []VulnInfo{}
 	for _, v := range view {
@@ -58,6 +46,7 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 			URI:         v.URI.String,
 			Impact:      v.Impact.String,
 			Solution:    v.Solution.String,
+			CVSSVector:  v.CVSSVector.String,
 			Severity:    severity,
 			DatePublic:  v.GetDatePublic().Format("2006年1月2日"),
 			DatePublish: v.GetDatePublish().Format("2006年1月2日"),
@@ -66,49 +55,7 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 		list = append(list, l)
 	}
 
-	buf := &bytes.Buffer{}
-	switch f {
-	case FormHTML:
-		var fname string
-		if verbose {
-			fname = "/template-list-detail.html"
-		} else {
-			fname = "/template-list.html"
-		}
-		tf, errAssets := Assets.Open(fname)
-		if errAssets != nil {
-			return nil, errAssets
-		}
-		tmpdata := &strings.Builder{}
-		io.Copy(tmpdata, tf)
-		t, errTmp := html.New("Listing by HTML").Parse(tmpdata.String())
-		if errTmp != nil {
-			return nil, errTmp
-		}
-		if err = t.Execute(buf, list); err != nil {
-			return nil, err
-		}
-	case FormMarkdown:
-		var fname string
-		if verbose {
-			fname = "/template-list-detail.md"
-		} else {
-			fname = "/template-list.md"
-		}
-		tf, errAssets := Assets.Open(fname)
-		if errAssets != nil {
-			return nil, errAssets
-		}
-		tmpdata := &strings.Builder{}
-		io.Copy(tmpdata, tf)
-		t, errTmp := text.New("Listing by Markdown").Parse(tmpdata.String())
-		if errTmp != nil {
-			return nil, errTmp
-		}
-		if err = t.Execute(buf, list); err != nil {
-			return nil, err
-		}
-	case FormCSV:
+	if f == FormCSV {
 		w := csv.NewWriter(buf)
 		w.Write(csvHeader)
 		for _, l := range list {
@@ -119,6 +66,7 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 				l.URI,
 				l.Impact,
 				l.Solution,
+				l.CVSSVector,
 				l.Severity,
 				l.DatePublic,
 				l.DatePublish,
@@ -127,7 +75,33 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 			w.Write(rec)
 		}
 		w.Flush()
-	default:
+	} else {
+		var tf io.Reader
+		if len(tfname) > 0 {
+			file, err := os.Open(tfname)
+			if err != nil {
+				return buf, err
+			}
+			tf = file
+		} else {
+			file, err := Assets.Open("/template-list-detail.md")
+			if err != nil {
+				return buf, err
+			}
+			tf = file
+		}
+		tmpdata := &strings.Builder{}
+		io.Copy(tmpdata, tf)
+		t, err := template.New("Listing by Markdown").Parse(tmpdata.String())
+		if err != nil {
+			return buf, err
+		}
+		if err := t.Execute(buf, list); err != nil {
+			return buf, err
+		}
+		if f == FormHTML {
+			return convHTML(buf), nil
+		}
 	}
 	return buf, nil
 }
