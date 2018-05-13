@@ -31,3 +31,5 @@
 - 発見日 {{ .Info.DatePublic }}
 - 公開日 {{ .Info.DatePublish }}
 - 最終更新日 {{ .Info.DateUpdate }}
+
+(Powerd by [JVN](https://jvn.jp/))

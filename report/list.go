@@ -84,7 +84,7 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 			}
 			tf = file
 		} else {
-			file, err := Assets.Open("/template-list-detail.md")
+			file, err := Assets.Open("/template-list.md")
 			if err != nil {
 				return buf, err
 			}
