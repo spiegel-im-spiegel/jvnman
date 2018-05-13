@@ -71,22 +71,19 @@ func (db *DB) update(tx *gorp.Transaction, jvnrss *rss.JVNRSS) error {
 				return err
 			}
 			ids = append(ids, itm.Identifier)
-		} else {
-			ds := obj.(*Vulnlist)
-			if itm.Modified.After(ds.GetDateUpdate()) {
-				db.GetLogger().Debugln("Update", itm.Identifier)
-				ds.Title = Text(html.UnescapeString(itm.Title))
-				ds.Description = Text(html.UnescapeString(itm.Description))
-				ds.URI = Text(html.UnescapeString(itm.Link))
-				ds.Creator = Text(html.UnescapeString(itm.Creator))
-				ds.DatePublic = Integer(itm.Date.Unix())
-				ds.DatePublish = Integer(itm.Issued.Unix())
-				ds.DateUpdate = Integer(itm.Modified.Unix())
-				if _, err := tx.Update(ds); err != nil {
-					return err
-				}
-				ids = append(ids, itm.Identifier)
+		} else if ds, ok := obj.(*Vulnlist); ok && itm.Modified.After(ds.GetDateUpdate()) {
+			db.GetLogger().Debugln("Update", itm.Identifier)
+			ds.Title = Text(html.UnescapeString(itm.Title))
+			ds.Description = Text(html.UnescapeString(itm.Description))
+			ds.URI = Text(html.UnescapeString(itm.Link))
+			ds.Creator = Text(html.UnescapeString(itm.Creator))
+			ds.DatePublic = Integer(itm.Date.Unix())
+			ds.DatePublish = Integer(itm.Issued.Unix())
+			ds.DateUpdate = Integer(itm.Modified.Unix())
+			if _, err := tx.Update(ds); err != nil {
+				return err
 			}
+			ids = append(ids, itm.Identifier)
 		}
 	}
 	return db.updateDetail(tx, ids)
