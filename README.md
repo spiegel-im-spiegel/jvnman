@@ -27,6 +27,8 @@ Windows 環境で [GCC] のインストールを行う場合は [MinGW-w64] を�
 $ dep ensure
 ```
 
+[リリースページ](https://github.com/spiegel-im-spiegel/jvnman/releases/latest)では Windows 64bit 用のバイナリのみ提供しています。
+
 ## [jvnman] の使い方
 
 ```
@@ -90,7 +92,7 @@ $ jvnman init
 
  [SQLite] データベース・ファイルを初期化して作り直したい場合も `jvnman init` コマンドで初期化できます。
 
-データベースのテーブル仕様はリポジトリの [jvnman/docs/](https://github.com/spiegel-im-spiegel/jvnman/tree/master/docs) フォルダ以下にあります。
+データベースのテーブル仕様はリポジトリの [docs/](https://github.com/spiegel-im-spiegel/jvnman/tree/master/docs) フォルダ以下にあります。
 
 ### 脆弱性情報の蓄積・更新
 
@@ -247,7 +249,7 @@ $ jvnman info -f html JVNDB-2018-002862  > JVNDB-2018-002862.html
 $ jvnman info -t template-info.md JVNDB-2018-002862
 ```
 
-[jvnman] が使用している標準のテンプレートファイルはリポジトリの [jvnman/report/assets/](https://github.com/spiegel-im-spiegel/jvnman/tree/master/report/assets) フォルダにあります。
+[jvnman] が使用している標準のテンプレートファイルはリポジトリの [report/assets/](https://github.com/spiegel-im-spiegel/jvnman/tree/master/report/assets) フォルダにあります。
 参考にしてください。
 
 ### ログ出力について
