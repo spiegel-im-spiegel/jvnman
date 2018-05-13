@@ -178,16 +178,16 @@ func (db *DB) GetLastUpdate() time.Time {
 		db.GetLogger().Errorln(err)
 		return time.Time{}
 	} else if err := db.GetDB().SelectOne(&ds, psql); err != nil {
-		db.GetLogger().Println(err)
+		db.GetLogger().Errorln(err)
 		return time.Time{}
 	}
-	if ds.Last.Valid {
-		dt := getTimeFromUnixtime(ds.Last.Int64)
-		db.GetLogger().Println("last update:", dt)
-		return dt
+	if !ds.Last.Valid {
+		db.GetLogger().Println("no data in database")
+		return time.Time{}
 	}
-	db.GetLogger().Println("no data in database")
-	return time.Time{}
+	dt := getTimeFromUnixtime(ds.Last.Int64)
+	db.GetLogger().Println("last update:", dt)
+	return dt
 }
 
 /* Copyright 2018 Spiegel
