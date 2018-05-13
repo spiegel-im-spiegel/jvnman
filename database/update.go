@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"html"
 	"time"
 
@@ -171,22 +172,22 @@ func (db *DB) updateDetail(tx *gorp.Transaction, ids []string) error {
 //GetLastUpdate returns  last update time.Time
 func (db *DB) GetLastUpdate() time.Time {
 	var ds struct {
-		Last int64 `db:"last"`
+		Last sql.NullInt64 `db:"last"`
 	}
 	if psql, _, err := squirrel.Select("max(date_update) as last").From("vulnlist").ToSql(); err != nil {
 		db.GetLogger().Errorln(err)
 		return time.Time{}
 	} else if err := db.GetDB().SelectOne(&ds, psql); err != nil {
-		db.GetLogger().Errorln(err)
+		db.GetLogger().Println(err)
 		return time.Time{}
 	}
-	dt := getTimeFromUnixtime(ds.Last)
-	if dt.IsZero() {
-		db.GetLogger().Println("no data in database")
-	} else {
+	if ds.Last.Valid {
+		dt := getTimeFromUnixtime(ds.Last.Int64)
 		db.GetLogger().Println("last update:", dt)
+		return dt
 	}
-	return dt
+	db.GetLogger().Println("no data in database")
+	return time.Time{}
 }
 
 /* Copyright 2018 Spiegel
