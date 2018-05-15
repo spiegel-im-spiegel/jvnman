@@ -1,6 +1,9 @@
 package facade
 
 import (
+	"io"
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spiegel-im-spiegel/gocli/rwi"
@@ -53,11 +56,18 @@ func newListCmd(ui *rwi.RWI) *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "--template")
 			}
+			var tr io.Reader = nil
 			if len(tf) > 0 {
 				db.GetLogger().Println("template option:", tf)
+				file, err := os.Open(tf)
+				if err != nil {
+					return err
+				}
+				defer file.Close()
+				tr = file
 			}
 
-			r, err := report.ListData(db, days, score, p, c, form, tf)
+			r, err := report.ListData(db, days, score, p, c, form, tr)
 			if err != nil {
 				db.GetLogger().Fatalln(err)
 				return err

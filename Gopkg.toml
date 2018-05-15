@@ -19,6 +19,10 @@
   version = "0.2.*"
 
 [[constraint]]
+  name = "github.com/spiegel-im-spiegel/go-cvss"
+  branch = "master"
+
+[[constraint]]
   name = "github.com/lestrrat-go/file-rotatelogs"
   version = "2.1.*"
 
@@ -41,6 +45,10 @@
 [[constraint]]
   name = "gopkg.in/russross/blackfriday.v2"
   version = "2.0.*"
+
+[[constraint]]
+  name = "golang.org/x/text"
+  version = "0.3.*"
 
 [prune]
   go-tests = true

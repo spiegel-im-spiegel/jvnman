@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"text/template"
 
+	"github.com/spiegel-im-spiegel/go-cvss/v3/base"
 	"github.com/spiegel-im-spiegel/jvnman/database"
+	"golang.org/x/text/language"
 )
 
 //Info returns io.Reader for detail info
-func Info(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
+func Info(db *database.DB, id string, tf io.Reader, f Format) (io.Reader, error) {
 	buf := &bytes.Buffer{}
 	detail := VulnDetail{}
 	v := getGetVulnviewByID(db, id)
@@ -54,6 +55,13 @@ func Info(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
 		detail.CVSS.ID = c.ID.String
 		detail.CVSS.Version = c.Version.String
 		detail.CVSS.BaseVector = c.BaseVector.String
+		if m, err := base.Decode(detail.CVSS.BaseVector); err == nil {
+			if rep, err := m.Report(getCVSSTemplate(), language.Japanese); err == nil {
+				bldr := &strings.Builder{}
+				io.Copy(bldr, rep)
+				detail.CVSS.BaseReport = bldr.String()
+			}
+		}
 		detail.CVSS.BaseScore = c.BaseScore.Float64
 		detail.CVSS.Severity = getSeverityJa(c.Severity.String)
 	}
@@ -74,18 +82,12 @@ func Info(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
 	}
 	detail.Relattions = rf
 
-	var tf io.Reader
-	if len(tfname) > 0 {
-		file, err := os.Open(tfname)
-		if err != nil {
-			return buf, err
-		}
-		tf = file
-	} else {
+	if tf == nil {
 		file, err := Assets.Open("/template-detail.md")
 		if err != nil {
 			return buf, err
 		}
+		defer file.Close()
 		tf = file
 	}
 	tmpdata := &strings.Builder{}
@@ -101,6 +103,14 @@ func Info(db *database.DB, id, tfname string, f Format) (io.Reader, error) {
 		return convHTML(buf), nil
 	}
 	return buf, nil
+}
+
+func getCVSSTemplate() io.Reader {
+	file, err := Assets.Open("/cvss.md")
+	if err != nil {
+		return nil
+	}
+	return file
 }
 
 func getGetVulnviewByID(db *database.DB, id string) *database.Vulnview {
