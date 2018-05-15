@@ -142,14 +142,14 @@
   version = "v1.0.2"
 
 [[projects]]
-  branch = "master"
   name = "github.com/spiegel-im-spiegel/go-cvss"
   packages = [
     ".",
     "v3/base",
     "v3/version"
   ]
-  revision = "42f4e20ab5793ad9c26204ecc162ceb7f1841e8a"
+  revision = "e833e910db644ca554948563659c226fd9976911"
+  version = "v0.1.0"
 
 [[projects]]
   name = "github.com/spiegel-im-spiegel/go-myjvn"
@@ -162,8 +162,8 @@
     "values",
     "vuldef"
   ]
-  revision = "1107c8ed63eb8caa0b3188ceb59bf985b9a1bca6"
-  version = "v0.3.0"
+  revision = "fc7c64f0b637ce2d5f54a2b3bc731a3ddbd6345d"
+  version = "v0.4.0"
 
 [[projects]]
   name = "github.com/spiegel-im-spiegel/gocli"
@@ -228,6 +228,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "738f104b97063c4bf054d038e321bf4785e057f4acc1d047ece8a693b3c0089f"
+  inputs-digest = "ec991b84f18426b85b1cadf2d2f8e0bab4d7c0e10f351f115d412fa426e68796"
   solver-name = "gps-cdcl"
   solver-version = 1

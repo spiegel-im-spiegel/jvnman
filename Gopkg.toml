@@ -12,7 +12,7 @@
 
 [[constraint]]
   name = "github.com/spiegel-im-spiegel/go-myjvn"
-  version = "0.3.*"
+  version = "0.4.*"
 
 [[constraint]]
   name = "github.com/spiegel-im-spiegel/logf"
@@ -20,7 +20,7 @@
 
 [[constraint]]
   name = "github.com/spiegel-im-spiegel/go-cvss"
-  branch = "master"
+  version = "0.1.*"
 
 [[constraint]]
   name = "github.com/lestrrat-go/file-rotatelogs"
