@@ -149,7 +149,7 @@
     "v3/base",
     "v3/version"
   ]
-  revision = "efca6ac8392dfc6f6726c81823a246e9c8594497"
+  revision = "42f4e20ab5793ad9c26204ecc162ceb7f1841e8a"
 
 [[projects]]
   name = "github.com/spiegel-im-spiegel/go-myjvn"
@@ -184,7 +184,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
+  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
 
 [[projects]]
   name = "golang.org/x/text"

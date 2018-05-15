@@ -1,4 +1,4 @@
-| 基本評価基準 | 評価値 |
+| {{ .BaseMetrics }} | {{ .MetricValue }} |
 |--------|-------|
 | {{ .AVName }} | {{ .AVValue }} |
 | {{ .ACName }} | {{ .ACValue }} |

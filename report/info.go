@@ -55,16 +55,20 @@ func Info(db *database.DB, id string, tf io.Reader, f Format) (io.Reader, error)
 		detail.CVSS.ID = c.ID.String
 		detail.CVSS.Version = c.Version.String
 		detail.CVSS.BaseVector = c.BaseVector.String
-		if m, err := base.Decode(detail.CVSS.BaseVector); err == nil {
-			file, err := Assets.Open("/cvss.md")
-			if err != nil {
-				return buf, err
-			}
-			defer file.Close()
-			if rep, err := m.Report(file, language.Japanese); err == nil {
-				bldr := &strings.Builder{}
-				io.Copy(bldr, rep)
-				detail.CVSS.BaseReport = bldr.String()
+		if m, err := base.Decode(detail.CVSS.BaseVector); err != nil {
+			db.GetLogger().Errorln(err)
+		} else {
+			if file, err := Assets.Open("/cvss.md"); err != nil {
+				db.GetLogger().Errorln(err)
+			} else {
+				defer file.Close()
+				if rep, err := m.Report(file, language.Japanese); err != nil {
+					db.GetLogger().Errorln(err)
+				} else {
+					bldr := &strings.Builder{}
+					io.Copy(bldr, rep)
+					detail.CVSS.BaseReport = bldr.String()
+				}
 			}
 		}
 		detail.CVSS.BaseScore = c.BaseScore.Float64
