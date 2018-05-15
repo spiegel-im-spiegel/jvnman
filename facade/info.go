@@ -1,6 +1,7 @@
 package facade
 
 import (
+	"io"
 	"os"
 	"strings"
 
@@ -43,11 +44,18 @@ func newInfoCmd(ui *rwi.RWI) *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "--template")
 			}
+			var tr io.Reader = nil
 			if len(tf) > 0 {
 				db.GetLogger().Println("template option:", tf)
+				file, err := os.Open(tf)
+				if err != nil {
+					return err
+				}
+				defer file.Close()
+				tr = file
 			}
 
-			r, err := report.Info(db, id, tf, form)
+			r, err := report.Info(db, id, tr, form)
 			if err != nil {
 				db.GetLogger().Fatalln(err)
 				return err

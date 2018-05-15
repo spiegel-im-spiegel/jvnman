@@ -14,7 +14,7 @@ func TestVersionNormal(t *testing.T) {
 		out    string
 		outErr string
 	}{
-		{args: []string{"version"}, out: "", outErr: "jvnman v0.1.0\n"},
+		{args: []string{"version"}, out: "", outErr: "jvnman v0.2.0\n"},
 	}
 
 	for _, tc := range testCases {

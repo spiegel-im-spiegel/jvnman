@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"html"
 	"time"
 
@@ -71,22 +72,19 @@ func (db *DB) update(tx *gorp.Transaction, jvnrss *rss.JVNRSS) error {
 				return err
 			}
 			ids = append(ids, itm.Identifier)
-		} else {
-			ds := obj.(*Vulnlist)
-			if itm.Modified.After(ds.GetDateUpdate()) {
-				db.GetLogger().Debugln("Update", itm.Identifier)
-				ds.Title = Text(html.UnescapeString(itm.Title))
-				ds.Description = Text(html.UnescapeString(itm.Description))
-				ds.URI = Text(html.UnescapeString(itm.Link))
-				ds.Creator = Text(html.UnescapeString(itm.Creator))
-				ds.DatePublic = Integer(itm.Date.Unix())
-				ds.DatePublish = Integer(itm.Issued.Unix())
-				ds.DateUpdate = Integer(itm.Modified.Unix())
-				if _, err := tx.Update(ds); err != nil {
-					return err
-				}
-				ids = append(ids, itm.Identifier)
+		} else if ds, ok := obj.(*Vulnlist); ok && itm.Modified.After(ds.GetDateUpdate()) {
+			db.GetLogger().Debugln("Update", itm.Identifier)
+			ds.Title = Text(html.UnescapeString(itm.Title))
+			ds.Description = Text(html.UnescapeString(itm.Description))
+			ds.URI = Text(html.UnescapeString(itm.Link))
+			ds.Creator = Text(html.UnescapeString(itm.Creator))
+			ds.DatePublic = Integer(itm.Date.Unix())
+			ds.DatePublish = Integer(itm.Issued.Unix())
+			ds.DateUpdate = Integer(itm.Modified.Unix())
+			if _, err := tx.Update(ds); err != nil {
+				return err
 			}
+			ids = append(ids, itm.Identifier)
 		}
 	}
 	return db.updateDetail(tx, ids)
@@ -174,7 +172,7 @@ func (db *DB) updateDetail(tx *gorp.Transaction, ids []string) error {
 //GetLastUpdate returns  last update time.Time
 func (db *DB) GetLastUpdate() time.Time {
 	var ds struct {
-		Last int64 `db:"last"`
+		Last sql.NullInt64 `db:"last"`
 	}
 	if psql, _, err := squirrel.Select("max(date_update) as last").From("vulnlist").ToSql(); err != nil {
 		db.GetLogger().Errorln(err)
@@ -183,12 +181,12 @@ func (db *DB) GetLastUpdate() time.Time {
 		db.GetLogger().Errorln(err)
 		return time.Time{}
 	}
-	dt := getTimeFromUnixtime(ds.Last)
-	if dt.IsZero() {
+	if !ds.Last.Valid {
 		db.GetLogger().Println("no data in database")
-	} else {
-		db.GetLogger().Println("last update:", dt)
+		return time.Time{}
 	}
+	dt := getTimeFromUnixtime(ds.Last.Int64)
+	db.GetLogger().Println("last update:", dt)
 	return dt
 }
 

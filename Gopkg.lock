@@ -142,6 +142,16 @@
   version = "v1.0.2"
 
 [[projects]]
+  name = "github.com/spiegel-im-spiegel/go-cvss"
+  packages = [
+    ".",
+    "v3/base",
+    "v3/version"
+  ]
+  revision = "e833e910db644ca554948563659c226fd9976911"
+  version = "v0.1.0"
+
+[[projects]]
   name = "github.com/spiegel-im-spiegel/go-myjvn"
   packages = [
     ".",
@@ -152,8 +162,8 @@
     "values",
     "vuldef"
   ]
-  revision = "1107c8ed63eb8caa0b3188ceb59bf985b9a1bca6"
-  version = "v0.3.0"
+  revision = "fc7c64f0b637ce2d5f54a2b3bc731a3ddbd6345d"
+  version = "v0.4.0"
 
 [[projects]]
   name = "github.com/spiegel-im-spiegel/gocli"
@@ -174,14 +184,16 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
+  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
 
 [[projects]]
   name = "golang.org/x/text"
   packages = [
     "internal/gen",
+    "internal/tag",
     "internal/triegen",
     "internal/ucd",
+    "language",
     "transform",
     "unicode/cldr",
     "unicode/norm"
@@ -216,6 +228,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "22350ffa6bcb2ed7c72587828b27782fdbbdecb4a97f66e73ff04ca97eb81023"
+  inputs-digest = "ec991b84f18426b85b1cadf2d2f8e0bab4d7c0e10f351f115d412fa426e68796"
   solver-name = "gps-cdcl"
   solver-version = 1

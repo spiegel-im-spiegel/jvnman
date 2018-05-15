@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"text/template"
 
@@ -27,7 +26,7 @@ var csvHeader = []string{
 }
 
 //ListData returns io.Reader for listing
-func ListData(db *database.DB, days int, score float64, product, cve string, f Format, tfname string) (io.Reader, error) {
+func ListData(db *database.DB, days int, score float64, product, cve string, f Format, tf io.Reader) (io.Reader, error) {
 	buf := &bytes.Buffer{}
 	view, err := db.GetVulnviewList(days, score, product, cve)
 	if err != nil {
@@ -76,18 +75,12 @@ func ListData(db *database.DB, days int, score float64, product, cve string, f F
 		}
 		w.Flush()
 	} else {
-		var tf io.Reader
-		if len(tfname) > 0 {
-			file, err := os.Open(tfname)
+		if tf == nil {
+			file, err := Assets.Open("/template-list.md")
 			if err != nil {
 				return buf, err
 			}
-			tf = file
-		} else {
-			file, err := Assets.Open("/template-list-detail.md")
-			if err != nil {
-				return buf, err
-			}
+			defer file.Close()
 			tf = file
 		}
 		tmpdata := &strings.Builder{}
