@@ -56,7 +56,12 @@ func Info(db *database.DB, id string, tf io.Reader, f Format) (io.Reader, error)
 		detail.CVSS.Version = c.Version.String
 		detail.CVSS.BaseVector = c.BaseVector.String
 		if m, err := base.Decode(detail.CVSS.BaseVector); err == nil {
-			if rep, err := m.Report(getCVSSTemplate(), language.Japanese); err == nil {
+			file, err := Assets.Open("/cvss.md")
+			if err != nil {
+				return buf, err
+			}
+			defer file.Close()
+			if rep, err := m.Report(file, language.Japanese); err == nil {
 				bldr := &strings.Builder{}
 				io.Copy(bldr, rep)
 				detail.CVSS.BaseReport = bldr.String()
@@ -103,14 +108,6 @@ func Info(db *database.DB, id string, tf io.Reader, f Format) (io.Reader, error)
 		return convHTML(buf), nil
 	}
 	return buf, nil
-}
-
-func getCVSSTemplate() io.Reader {
-	file, err := Assets.Open("/cvss.md")
-	if err != nil {
-		return nil
-	}
-	return file
 }
 
 func getGetVulnviewByID(db *database.DB, id string) *database.Vulnview {
