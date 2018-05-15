@@ -29,7 +29,7 @@ type CVSSInfo struct {
 	Version    string
 	BaseVector string
 	BaseReport string
-	BaseScore  float64
+	BaseScore  string
 	Severity   string
 }
 

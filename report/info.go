@@ -71,7 +71,7 @@ func Info(db *database.DB, id string, tf io.Reader, f Format) (io.Reader, error)
 				}
 			}
 		}
-		detail.CVSS.BaseScore = c.BaseScore.Float64
+		detail.CVSS.BaseScore = fmt.Sprintf("%.1f", c.BaseScore.Float64)
 		detail.CVSS.Severity = getSeverityJa(c.Severity.String)
 	}
 	rf := []RelatedInfo{}

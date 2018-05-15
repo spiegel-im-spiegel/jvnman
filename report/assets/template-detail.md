@@ -15,7 +15,7 @@
 
 ### 深刻度
 
-{{ with .CVSS }}{{ if .Severity }}{{ .Severity }}: {{ .BaseVector }}（{{ .BaseScore }}）
+{{ with .CVSS }}{{ if .Severity }}{{ .Severity }} ({{ .BaseScore }}) : {{ .BaseVector }}
 
 {{ .BaseReport }}{{ else }}CVSSv3 評価なし{{ end }}{{ end }}
 
