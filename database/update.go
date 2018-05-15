@@ -67,13 +67,13 @@ func (db *DB) update(tx *gorp.Transaction, jvnrss *rss.JVNRSS) error {
 			return err
 		}
 		if obj == nil {
-			db.GetLogger().Debugln("Insert", itm.Identifier)
+			db.GetLogger().Println("Insert", itm.Identifier, itm.Title)
 			if err := tx.Insert(NewVulnlist(itm.Identifier, html.UnescapeString(itm.Title), html.UnescapeString(itm.Description), html.UnescapeString(itm.Link), html.UnescapeString(itm.Creator), "", "", itm.Date.Unix(), itm.Issued.Unix(), itm.Modified.Unix())); err != nil {
 				return err
 			}
 			ids = append(ids, itm.Identifier)
 		} else if ds, ok := obj.(*Vulnlist); ok && itm.Modified.After(ds.GetDateUpdate()) {
-			db.GetLogger().Debugln("Update", itm.Identifier)
+			db.GetLogger().Println("Update", itm.Identifier, itm.Title)
 			ds.Title = Text(html.UnescapeString(itm.Title))
 			ds.Description = Text(html.UnescapeString(itm.Description))
 			ds.URI = Text(html.UnescapeString(itm.Link))
