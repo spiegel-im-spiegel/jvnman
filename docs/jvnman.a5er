@@ -1,0 +1,220 @@
+﻿# A5:ER FORMAT:11
+# A5:ER ENCODING:UTF8
+# A5:ER Mk-1 Copyright (C)2007 m.matsubara
+# A5:SQL Mk-2 Copyright (C)1997 m.matsubara
+#  http://www.wind.sannet.ne.jp/m_matsu/developer/a5m2/
+
+[Manager]
+ProjectName=
+Author=
+MaxEntityRowShow=1000
+ReadOnlyRecommend=0
+Page=Main
+PageInfo="Main",3,"A3Landscape",$FFFFFF
+LogicalView=1
+DecodeDomain=0
+ViewModePageIndividually=1
+ViewMode=3
+ViewFormat=0
+UseNondependenceDashLine=0
+FontName=Noto Sans
+FontSize=9
+PaperSize=A4Landscape
+HeaderLeft=
+HeaderCenter=
+HeaderRight=
+FooterLeft=
+FooterCenter=
+FooterRight=
+ShowPageoutRelation=1
+RDBMSTypeName=Oracle Database
+DefaultPkName=%0:s_PKC
+DefaultPkIndexName=%0:s_PKI
+DefaultIndexName=%0:s_IX%1:d
+DefaultFkName=%0:s_FK%1:d
+SqlSeparator=0
+ShowTag=1
+ShowCommonAttributes=0
+
+[Relation]
+Entity1=vulnlist
+Entity2=history
+RelationType1=2
+RelationType2=4
+Fields1=id
+Fields2=id
+Cardinarity1=
+Cardinarity2=
+Position="MAIN",0,8624,4929,4085,R,R
+Dependence=1
+Caption=
+PName=
+ModifiedDateTime=20180530200019
+LineMode=0
+Bar1=862
+Bar2=493
+Bar3=408
+TermPos1=R
+TermPos2=R
+
+[Relation]
+Entity1=vulnlist
+Entity2=related
+RelationType1=2
+RelationType2=4
+Fields1=id
+Fields2=id
+Cardinarity1=
+Cardinarity2=
+Position="MAIN",0,5039,5782,2896,R,R
+Dependence=1
+Caption=
+PName=
+ModifiedDateTime=20180530195934
+LineMode=0
+Bar1=504
+Bar2=578
+Bar3=290
+TermPos1=R
+TermPos2=R
+
+[Relation]
+Entity1=vulnlist
+Entity2=cvss
+RelationType1=2
+RelationType2=4
+Fields1=id
+Fields2=id
+Cardinarity1=
+Cardinarity2=
+Position="MAIN",0,2809,7666,5618,R,R
+Dependence=1
+Caption=
+PName=
+ModifiedDateTime=20180530195850
+LineMode=0
+Bar1=281
+Bar2=767
+Bar3=562
+TermPos1=R
+TermPos2=R
+
+[Relation]
+Entity1=vulnlist
+Entity2=affected
+RelationType1=2
+RelationType2=4
+Fields1=id
+Fields2=id
+Cardinarity1=
+Cardinarity2=
+Position="MAIN",0,1175,4864,2937,R,R
+Dependence=1
+Caption=
+PName=
+ModifiedDateTime=20180530195809
+LineMode=0
+Bar1=118
+Bar2=486
+Bar3=294
+TermPos1=R
+TermPos2=R
+
+[Entity]
+PName=affected
+LName=affected
+Comment=
+TableOption=
+Page=Main
+Left=700
+Top=150
+Field="id","id","TEXT","NOT NULL",0,"","",$00FF0000,""
+Field="name","name","TEXT","NOT NULL",1,"","",$00FF0000,""
+Field="product_name","product_name","TEXT","NOT NULL",2,"","",$00FF0000,""
+Field="version_number","version_number","TEXT","NOT NULL",3,"","",$00FF0000,""
+EffectMode=None
+Color=$000000
+BkColor=$FFFFFF
+ModifiedDateTime=20180530195517
+Position="Main",700,150
+
+[Entity]
+PName=cvss
+LName=cvss
+Comment=
+TableOption=
+Page=Main
+Left=700
+Top=350
+Field="id","id","TEXT","NOT NULL",0,"","",$00FF0000,""
+Field="version","version","TEXT","NOT NULL",1,"","",$00FF0000,""
+Field="base_vector","base_vector","TEXT",,,"","",$FFFFFFFF,""
+Field="base_score","base_score","NUMERIC",,,"","",$FFFFFFFF,""
+Field="severity","severity","TEXT",,,"","",$FFFFFFFF,""
+EffectMode=None
+Color=$000000
+BkColor=$FFFFFF
+ModifiedDateTime=20180530195537
+Position="Main",700,350
+
+[Entity]
+PName=history
+LName=history
+Comment=
+TableOption=
+Page=Main
+Left=700
+Top=900
+Field="id","id","TEXT","NOT NULL",0,"","",$00FF0000,""
+Field="history_no","history_no","NUMERIC","NOT NULL",1,"","",$00FF0000,""
+Field="description","description","TEXT",,,"","",$FFFFFFFF,""
+Field="date_time","date_time","INTEGER",,,"","",$FFFFFFFF,""
+EffectMode=None
+Color=$000000
+BkColor=$FFFFFF
+ModifiedDateTime=20180530195551
+Position="Main",700,900
+
+[Entity]
+PName=related
+LName=related
+Comment=
+TableOption=
+Page=Main
+Left=700
+Top=600
+Field="id","id","TEXT","NOT NULL",0,"","",$00FF0000,""
+Field="type","type","TEXT","NOT NULL",1,"","",$00FF0000,""
+Field="name","name","TEXT","NOT NULL",2,"","",$00FF0000,""
+Field="vulinfo_id","vulinfo_id","TEXT","NOT NULL",3,"","",$00FF0000,""
+Field="url","url","TEXT","NOT NULL",4,"","",$00FF0000,""
+Field="title","title","TEXT",,,"","",$FFFFFFFF,""
+EffectMode=None
+Color=$000000
+BkColor=$FFFFFF
+ModifiedDateTime=20180530195609
+Position="Main",700,600
+
+[Entity]
+PName=vulnlist
+LName=vulnlist
+Comment=
+TableOption=
+Page=Main
+Left=50
+Top=350
+Field="id","id","TEXT","NOT NULL",0,"","",$00FF0000,""
+Field="title","title","TEXT",,,"","",$FFFFFFFF,""
+Field="description","description","TEXT",,,"","",$FFFFFFFF,""
+Field="uri","uri","TEXT",,,"","",$FFFFFFFF,""
+Field="creator","creator","TEXT",,,"","",$FFFFFFFF,""
+Field="impact","impact","TEXT",,,"","",$FFFFFFFF,""
+Field="solution","solution","TEXT",,,"","",$FFFFFFFF,""
+Field="date_public","date_public","INTEGER",,,"","",$FFFFFFFF,""
+Field="date_publish","date_publish","INTEGER",,,"","",$FFFFFFFF,""
+Field="date_update","date_update","INTEGER",,,"","",$FFFFFFFF,""
+EffectMode=None
+Color=$000000
+BkColor=$FFFFFF
+ModifiedDateTime=20180530195644
+Position="Main",50,350
