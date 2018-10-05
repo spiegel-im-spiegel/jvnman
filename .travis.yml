@@ -3,8 +3,8 @@ language: go
 go:
   - "1.11.x"
 
-env:
-  - DEP_VERSION="0.4.1"
+install:
+  - env GO111MODULE=on go mod download
 
 script:
   - env GO111MODULE=on go test -v ./...
