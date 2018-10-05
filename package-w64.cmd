@@ -1,11 +1,9 @@
 @echo off
 setlocal
 set pacf=jvnman_%~1_windows_64bit.zip
+set GO111MODULE=on
 echo package to %pacf%
 pause
-
-dep ensure
-if ERRORLEVEL 1 echo fail dep && goto :end
 
 go test -v ./...
 if ERRORLEVEL 1 echo fail go test && goto :end

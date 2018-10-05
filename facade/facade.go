@@ -19,7 +19,7 @@ var (
 	//Name is applicatin name
 	Name = "jvnman"
 	//Version is version for applicatin
-	Version = "v0.3.0"
+	Version = "v0.3.1"
 )
 
 var (
